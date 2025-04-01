@@ -1,0 +1,254 @@
+@import url("https://fonts.googleapis.com/css2?family=Pathway+Gothic+One&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import "tailwindcss";
+
+:root {
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --font-text: "Poppins", sans-serif;
+  --font-title: "Pathway Gothic One", sans-serif;
+
+  --primary: #fbbf24;
+  --on-primary: #ffffff;
+  --primary-container: #e6d4a7;
+  --on-primary-container: #332907;
+  --secondary: #0e7490;
+  --on-secondary: #ffffff;
+  --secondary-container: #a4d8e6;
+  --on-secondary-container: #052933;
+  --tertiary: #006b5e;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #9de6dd;
+  --on-tertiary-container: #00332d;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #e6aca9;
+  --on-error-container: #330b09;
+  --background: #fcfcfb;
+  --on-background: #333231;
+  --surface: #fcfcfb;
+  --on-surface: #333231;
+  --surface-variant: #e6e3d9;
+  --on-surface-variant: #666254;
+  --outline: rgb(
+    128 118 103
+  ); /* Se usa para los contornos de elementos como tarjetas, botones y divisores. */
+  --outline-variant: rgb(
+    209 197 180
+  ); /* Se usa para bordes menos prominentes o sutiles. */
+  --shadow: rgb(
+    0 0 0
+  ); /* Se usa en elevaciones para dar profundidad a los elementos. */
+  --scrim: rgb(
+    0 0 0
+  ); /* Se usa para superposiciones oscuras en diálogos, menús y efectos de desenfoque. */
+  --inverse-surface: rgb(
+    52 48 39
+  ); /* Se usa para elementos oscuros en temas claros. */
+  --inverse-on-surface: rgb(
+    249 240 226
+  ); /* Garantiza contraste suficiente en fondos inversos. */
+  --inverse-primary: rgb(
+    237 192 108
+  ); /* Se usa para destacar el color primario en temas oscuros. */
+
+  /* Variantes de superficie para diferentes niveles de elevación: Se usan para jerarquizar la UI. */
+  --surface: rgb(
+    255 248 241
+  ); /* Color de superficie base: Fondo principal de la interfaz. Se usa en tarjetas, diálogos y componentes generales. */
+  --surface-variant: rgb(
+    238 225 207
+  ); /* Variante de superficie: Se usa para diferenciar secciones dentro de una misma pantalla sin un contraste fuerte. */
+  --inverse-surface: rgb(
+    52 48 39
+  ); /* Superficie inversa: Se usa en temas oscuros o cuando se quiere contrastar con elementos más claros. */
+  --surface-dim: rgb(
+    225 217 204
+  ); /* Superficie tenue: Alternativa más oscura del color surface, utilizada en interfaces de bajo contraste o modo oscuro. */
+  --surface-bright: rgb(
+    255 248 241
+  ); /* Superficie brillante: Variante más clara de surface, usada en encabezados o áreas que requieren más luminosidad. */
+  --surface-container-lowest: rgb(
+    255 255 255
+  ); /* Superficie de contenedor más baja: Representa el fondo más plano sin elevación. Se usa en el fondo general de la aplicación. */
+  --surface-container-low: rgb(
+    252 242 229
+  ); /* Superficie de contenedor baja: Se usa en elementos ligeramente elevados sobre el fondo, como tarjetas sin sombra. */
+  --surface-container: rgb(
+    246 237 223
+  ); /* Superficie de contenedor estándar: Se usa en tarjetas con sombra ligera y elementos de interfaz con algo de elevación. */
+  --surface-container-high: rgb(
+    240 231 217
+  ); /* Superficie de contenedor alta: Para elementos más elevados en la jerarquía visual, como menús desplegables y cuadros de diálogo. */
+  --surface-container-highest: rgb(
+    234 225 212
+  ); /* Superficie de contenedor más alta: Se usa en los elementos flotantes de mayor importancia, como tooltips y pop-ups. */
+
+  --radius: 0.625rem;
+
+  --chart-1: rgb(251, 201, 36);
+  --chart-2: rgb(235, 172, 7);
+  --chart-3: rgb(203, 132, 3);
+  --chart-4: rgb(161, 93, 7);
+  --chart-5: rgb(133, 73, 14);
+  --chart-6: rgb(113, 60, 18);
+  --chart-7: rgb(66, 30, 6);
+}
+
+.dark {
+  --primary: #e6cd8d;
+  --on-primary: #4c3a0b;
+  --primary-container: #664e0e;
+  --on-primary-container: #e6d4a7;
+  --secondary: #89d2e6;
+  --on-secondary: #083e4c;
+  --secondary-container: #0a5366;
+  --on-secondary-container: #a4d8e6;
+  --tertiary: #7fe6d9;
+  --on-tertiary: #004c43;
+  --tertiary-container: #00665a;
+  --on-tertiary-container: #9de6dd;
+  --error: #e69490;
+  --on-error: #4c100d;
+  --error-container: #661511;
+  --on-error-container: #e6aca9;
+  --background: #333231;
+  --on-background: #e6e5e2;
+  --surface: #333231;
+  --on-surface: #e6e5e2;
+  --surface-variant: #666154;
+  --on-surface-variant: #e6e1d4;
+  --outline: #b3ad9f;
+  --outline-variant: rgb(
+    78 70 57
+  ); /* Se usa para bordes menos prominentes o sutiles. */
+
+  --shadow: rgb(
+    0 0 0
+  ); /* Se usa en elevaciones para dar profundidad a los elementos. */
+  --scrim: rgb(
+    0 0 0
+  ); /* Se usa para superposiciones oscuras en diálogos, menús y efectos de desenfoque. */
+
+  --inverse-surface: rgb(
+    234 225 212
+  ); /* Superficie inversa: Se usa para elementos oscuros en temas claros. */
+  --inverse-on-surface: rgb(
+    52 48 39
+  ); /* Garantiza contraste suficiente en fondos inversos. */
+  --inverse-primary: rgb(
+    122 89 12
+  ); /* Se usa para destacar el color primario en temas oscuros. */
+
+  /* Variantes fijadas de los colores primarios, secundarios y terciarios: Se usan en componentes de alto énfasis como botones de acción. */
+  --primary-fixed: rgb(255 222 167);
+  --on-primary-fixed: rgb(39 25 0);
+  --primary-fixed-dim: rgb(237 192 108);
+  --on-primary-fixed-variant: rgb(94 66 0);
+  --secondary-fixed: rgb(159 242 226);
+  --on-secondary-fixed: rgb(0 32 27);
+  --secondary-fixed-dim: rgb(131 213 198);
+  --on-secondary-fixed-variant: rgb(0 80 71);
+  --tertiary-fixed: rgb(255 218 214);
+  --on-tertiary-fixed: rgb(59 9 8);
+  --tertiary-fixed-dim: rgb(255 179 172);
+  --on-tertiary-fixed-variant: rgb(115 51 47);
+
+  /* Variantes de superficie para diferentes niveles de elevación: Se usan para jerarquizar la UI. */
+  --surface-dim: rgb(
+    22 19 11
+  ); /* Superficie tenue: Alternativa más oscura del color surface, utilizada en interfaces de bajo contraste o modo oscuro. */
+  --surface-bright: rgb(
+    61 57 47
+  ); /* Superficie brillante: Variante más clara de surface, usada en encabezados o áreas que requieren más luminosidad. */
+  --surface-container-lowest: rgb(
+    17 14 7
+  ); /* Superficie de contenedor más baja: Representa el fondo más plano sin elevación. Se usa en el fondo general de la aplicación. */
+  --surface-container-low: rgb(
+    31 27 19
+  ); /* Superficie de contenedor baja: Se usa en elementos ligeramente elevados sobre el fondo, como tarjetas sin sombra. */
+  --surface-container: rgb(
+    35 31 23
+  ); /* Superficie de contenedor estándar: Se usa en tarjetas con sombra ligera y elementos de interfaz con algo de elevación. */
+  --surface-container-high: rgb(
+    46 42 33
+  ); /* Superficie de contenedor alta: Para elementos más elevados en la jerarquía visual, como menús desplegables y cuadros de diálogo. */
+  --surface-container-highest: rgb(
+    57 52 43
+  ); /* Superficie de contenedor más alta: Se usa en los elementos flotantes de mayor importancia, como tooltips y pop-ups. */
+
+  --chart-1: rgb(203, 132, 3);
+  --chart-2: rgb(235, 172, 7);
+  --chart-3: rgb(251, 201, 36);
+  --chart-4: rgb(254, 218, 70);
+  --chart-5: rgb(254, 236, 138);
+  --chart-6: rgb(254, 247, 195);
+  --chart-7: rgb(254, 251, 232);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary: var(--on-tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface-variant: var(--on-surface-variant);
+
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-shadow: var(--shadow);
+  --color-scrim: var(--scrim);
+
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+
+  /* Variantes de superficie para diferentes niveles de elevación: Se usan para jerarquizar la UI. */
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-text: var(--font-text);
+  --font-title: var(--font-title);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+}

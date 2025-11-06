@@ -10,6 +10,7 @@ export interface Course {
   completed: boolean
   order: number
   link?: string
+  due_date: Date | null
 }
 
 export interface TrainingTrack {
@@ -17,6 +18,7 @@ export interface TrainingTrack {
   title: string
   description?: string
   enrolled: boolean
+  due_date: Date | null
   progress_percentage: number
   completed_courses: number
   total_courses: number

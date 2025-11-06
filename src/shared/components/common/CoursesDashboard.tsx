@@ -203,6 +203,7 @@ export default function CoursesDashboard() {
               platform={course.platform}
               category={course.category}
               duration={course.duration}
+              dueDate={course.due_date ? new Date(course.due_date) : null}
             />
           ))}
         </div>

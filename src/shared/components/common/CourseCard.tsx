@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
-import { Clock, User } from "lucide-react"
+import { Clock, User, Calendar } from "lucide-react"
 import CourseProgressDialog from "./CourseProgressDialog"
 
 interface CourseCardProps {
@@ -15,6 +15,7 @@ interface CourseCardProps {
   platform?: string
   category?: string
   duration?: string
+  dueDate?: Date | null // ✅ Added new prop
 }
 
 // Mapa de colores y gradientes por categoría
@@ -67,6 +68,7 @@ export default function CourseCard({
   platform,
   category,
   duration,
+  dueDate, // ✅ new prop
 }: CourseCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -89,13 +91,20 @@ export default function CourseCard({
     ? categoryStyles[category] 
     : categoryStyles.default
 
+  // ✅ Format due date
+  const formattedDueDate = dueDate
+    ? new Date(dueDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null
+
   return (
     <>
       <Card className="bg-card border-border transition-all hover:shadow-lg overflow-hidden group">
-        {/* Header con color de catgoría */}
+        {/* Header con color de categoría */}
         <div className={`relative h-12 ${categoryStyle.gradient} flex items-center justify-center`}>
-          
-          {/* Badge de categoría */}
           {category && (
             <Badge className={`absolute top-3 right-3 ${categoryStyle.badgeClass} backdrop-blur-sm`}>
               {category}
@@ -117,9 +126,9 @@ export default function CourseCard({
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Instructor and Duration */}
-          {(platform || duration) && (
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          {/* Platform, Duration and Due Date */}
+          {(platform || duration || dueDate) && (
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               {platform && (
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4" />
@@ -130,6 +139,12 @@ export default function CourseCard({
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4" />
                   <span>{duration}</span>
+                </div>
+              )}
+              {formattedDueDate && (
+                <div className="flex items-center gap-1.5 text-foreground font-medium">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span>Due: {formattedDueDate}</span>
                 </div>
               )}
             </div>

@@ -185,12 +185,6 @@ export default function CourseProgressDialog({
     }
   }
 
-  const handleNoteChange = (moduleId: string, note: string) => {
-    setModuleNotes((prev) => ({
-      ...prev,
-      [moduleId]: note,
-    }))
-  }
 
   const handleSave = async () => {
     try {
@@ -361,8 +355,7 @@ export default function CourseProgressDialog({
                         previewUrls={previewUrls[module.id] || []}
                         onFilesChange={handleFilesChange}
                         onFileRemove={handleFileRemove}
-                        note={moduleNotes[module.id] || ""}
-                        onNoteChange={handleNoteChange}
+                        link={module.link}
                       />
                     ))
                   ) : (

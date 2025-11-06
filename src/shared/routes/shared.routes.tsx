@@ -3,10 +3,11 @@ import { Route } from "react-router-dom"
 import ProtectedRoute from "@/core/routes/ProtectedRoute"
 import AuthenticatedLayout from "../components/common/AuthenticatedLayout"
 import CoursesDashboard from "../components/common/CoursesDashboard"
+import WorkInProgress from "../components/common/WorkInProgressPage"
 
 // Shared pages (accessible by all authenticated users)
-const Support = () => <div>Support Page</div>
-const Settings = () => <div>Settings Page</div>
+const Support = () => <WorkInProgress />
+const Settings = () => <WorkInProgress />
 
 /**
  * Shared Routes

@@ -9,6 +9,7 @@ import {
   Upload,
   X,
   Image as ImageIcon,
+  ExternalLink,
 } from "lucide-react"
 import { useToast } from "@/shared/hooks/use-toast"
 import { Course } from "@/shared/store/coursesApi"
@@ -21,6 +22,7 @@ interface ModuleItemProps {
   previewUrls: string[]
   onFilesChange: (moduleId: string, files: FileList | null) => void
   onFileRemove: (moduleId: string, index: number) => void
+  link?: string // New prop for the link
 }
 
 export default function CourseModuleItem({
@@ -31,6 +33,7 @@ export default function CourseModuleItem({
   previewUrls,
   onFilesChange,
   onFileRemove,
+  link,
 }: ModuleItemProps) {
   const { toast } = useToast()
   const hasFiles = files.length > 0
@@ -47,8 +50,8 @@ export default function CourseModuleItem({
 
     if (imageFiles.length === 0) {
       toast({
-        title: "⚠️ Archivo inválido",
-        description: "Solo se permiten archivos de imagen (JPG, PNG, etc.)",
+        title: "⚠️ Invalid file",
+        description: "Only image files are allowed (JPG, PNG, etc.)",
         variant: "destructive",
       })
       e.target.value = "" // Reset input
@@ -59,8 +62,8 @@ export default function CourseModuleItem({
     const oversizedFiles = imageFiles.filter((file) => file.size > 5 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
       toast({
-        title: "⚠️ Archivo muy grande",
-        description: "Las imágenes deben ser menores a 5MB",
+        title: "⚠️ File too large",
+        description: "Images must be smaller than 5MB",
         variant: "destructive",
       })
       e.target.value = "" // Reset input
@@ -68,7 +71,7 @@ export default function CourseModuleItem({
     }
 
     onFilesChange(module.id, selectedFiles)
-    e.target.value = "" // Reset input to allow re-uploading same file
+    e.target.value = "" // Reset input to allow re-uploading the same file
   }
 
   return (
@@ -100,6 +103,25 @@ export default function CourseModuleItem({
             >
               {module.title}
             </Label>
+            {/* Module link */}
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto"
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 h-7 px-2"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="text-xs">Go to link</span>
+                </Button>
+              </a>
+            )}
           </div>
           {module.description && (
             <p className="text-sm text-muted-foreground pl-6">
@@ -134,7 +156,7 @@ export default function CourseModuleItem({
             className="gap-2"
           >
             <Upload className="w-4 h-4" />
-            Subir Fotos
+            Upload Photos
           </Button>
           {hasFiles && (
             <Badge variant="secondary" className="gap-1">
@@ -161,7 +183,7 @@ export default function CourseModuleItem({
                   type="button"
                   onClick={() => onFileRemove(module.id, index)}
                   className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Eliminar imagen"
+                  aria-label="Remove image"
                 >
                   <X className="w-3 h-3" />
                 </button>

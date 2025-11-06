@@ -19,7 +19,7 @@ export const CONSULTANT_NAV: NavSection[] = [
     items: [
       { label: "My Progress", icon: BookOpen, path: "/dashboard", active: true },
       { label: "Training Schedule", icon: Calendar, path: "/schedule" },
-      { label: "Course Resources", icon: BookOpen, path: "/resources" },
+      //{ label: "Course Resources", icon: BookOpen, path: "/resources" },
     ],
   },
   {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -6,139 +6,149 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { cn } from '@/shared/lib/utils';
 import { MONTH_NAMES, DAY_NAMES, CALENDAR_GRID_SIZE } from './constants';
-import { ConsultantMonthSummary } from './MonthSummary';
-import { getCategoryIcon, getDominantCategory } from './utils';
-import { 
-  mockMonthSummary, 
-  getCourseCountForDay, 
-  getCategoriesForDay 
-} from './mock';
-import type { MonthTrainingSummary } from './types';
+import { MonthSummary } from './MonthSummary';
+import { getCategoryIcon, getDominantCategory, getDateString, isWeekend } from './utils';
+import { useGetMonthTrainingQuery } from './store/TrainingCalendarApi';
+import type { 
+  CalendarDayData, 
+  TrainingCalendarProps 
+} from './types';
 
-const TrainingCalendar: React.FC = () => {
+/**
+ * Training Calendar Component with RTK Query
+ * This version uses Redux Toolkit Query for data fetching
+ */
+const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
+  userId,
+  onEventClick,
+  onDateClick
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [monthSummary, setMonthSummary] = useState<MonthTrainingSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  // Load month data (mock for now)
-  useEffect(() => {
-    loadMonthData(currentMonth, currentYear);
-  }, [currentMonth, currentYear]);
-
-  const loadMonthData = async (month: number, year: number) => {
-    setIsLoading(true);
-    
-    // TODO: Replace with actual API call
-    // const response = await fetch(`/api/training/month?month=${month}&year=${year}`);
-    // const data = await response.json();
-    // setMonthSummary(data.data);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setMonthSummary(mockMonthSummary);
-    setIsLoading(false);
-  };
+  // Fetch month data using RTK Query
+  const { 
+    data: monthSummary, 
+    isLoading, 
+    error,
+    refetch 
+  } = useGetMonthTrainingQuery({
+    year: currentYear,
+    month: currentMonth,
+    userId,
+  });
 
   const goToNextMonth = () => {
     const newDate = new Date(currentYear, currentMonth + 1, 1);
     setCurrentDate(newDate);
+    setSelectedDate(null);
   };
 
   const goToPreviousMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
     setCurrentDate(newDate);
+    setSelectedDate(null);
   };
 
   const goToToday = () => {
     setCurrentDate(new Date());
+    setSelectedDate(new Date().toISOString().split('T')[0]);
   };
 
-  // Calendar generation
-  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
-
-  const calendarDays: Array<{
-    day: number;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-    date: string;
-    coursesCount: number;
-    categories: { [key: string]: number };
-  }> = [];
-
-  // Previous month days
-  for (let i = firstDay - 1; i >= 0; i--) {
-    const day = daysInPrevMonth - i;
-    const prevMonth = currentMonth - 1;
-    const year = prevMonth < 0 ? currentYear - 1 : currentYear;
-    const month = prevMonth < 0 ? 11 : prevMonth;
-    const date = new Date(year, month, day).toISOString().split('T')[0];
-
-    calendarDays.push({
-      day,
-      isCurrentMonth: false,
-      isToday: false,
-      date,
-      coursesCount: 0,
-      categories: {}
-    });
-  }
-
-  // Current month days
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
+  // Generate calendar grid
+  const generateCalendarDays = (): CalendarDayData[] => {
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
     const today = new Date().toISOString().split('T')[0];
-    const coursesCount = getCourseCountForDay(day, currentMonth, currentYear);
-    const categories = getCategoriesForDay(day);
 
-    calendarDays.push({
-      day,
-      isCurrentMonth: true,
-      isToday: date === today,
-      date,
-      coursesCount,
-      categories
-    });
-  }
+    const calendarDays: CalendarDayData[] = [];
 
-  // Next month days to fill grid
-  const remainingDays = CALENDAR_GRID_SIZE - calendarDays.length;
-  for (let day = 1; day <= remainingDays; day++) {
-    const nextMonth = currentMonth + 1;
-    const year = nextMonth > 11 ? currentYear + 1 : currentYear;
-    const month = nextMonth > 11 ? 0 : nextMonth;
-    const date = new Date(year, month, day).toISOString().split('T')[0];
+    // Previous month days
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const day = daysInPrevMonth - i;
+      const prevMonth = currentMonth - 1;
+      const year = prevMonth < 0 ? currentYear - 1 : currentYear;
+      const month = prevMonth < 0 ? 11 : prevMonth;
+      const date = getDateString(year, month, day);
 
-    calendarDays.push({
-      day,
-      isCurrentMonth: false,
-      isToday: false,
-      date,
-      coursesCount: 0,
-      categories: {}
-    });
-  }
+      calendarDays.push({
+        day,
+        date,
+        isCurrentMonth: false,
+        isToday: date === today,
+        isWeekend: isWeekend(date),
+        summary: undefined,
+      });
+    }
 
-  const handleDateClick = (date: string, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return;
-    setSelectedDate(date);
-    // TODO: You could open a modal or navigate to a detailed view here
-    console.log('Selected date:', date);
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = getDateString(currentYear, currentMonth, day);
+      const daySummary = monthSummary?.dailySummaries[date];
+
+      calendarDays.push({
+        day,
+        date,
+        isCurrentMonth: true,
+        isToday: date === today,
+        isWeekend: isWeekend(date),
+        summary: daySummary,
+      });
+    }
+
+    // Next month days to fill grid
+    const remainingDays = CALENDAR_GRID_SIZE - calendarDays.length;
+    for (let day = 1; day <= remainingDays; day++) {
+      const nextMonth = currentMonth + 1;
+      const year = nextMonth > 11 ? currentYear + 1 : currentYear;
+      const month = nextMonth > 11 ? 0 : nextMonth;
+      const date = getDateString(year, month, day);
+
+      calendarDays.push({
+        day,
+        date,
+        isCurrentMonth: false,
+        isToday: date === today,
+        isWeekend: isWeekend(date),
+        summary: undefined,
+      });
+    }
+
+    return calendarDays;
   };
 
-  // Calculate totals by category for the month
-  const categoryTotals = monthSummary?.categoriesBreakdown.reduce(
-    (acc, cat) => ({ ...acc, [cat.category]: cat.count }),
-    {} as { [key: string]: number }
-  ) || {};
+  const calendarDays = generateCalendarDays();
+
+  const handleDateClick = (dayData: CalendarDayData) => {
+    if (!dayData.isCurrentMonth) return;
+    
+    setSelectedDate(dayData.date);
+    
+    if (onDateClick) {
+      onDateClick(dayData.date);
+    }
+  };
+
+  // Get top categories for header display
+  const topCategories = monthSummary?.categoriesBreakdown
+    .sort((a, b) => b.totalEvents - a.totalEvents)
+    .slice(0, 3) || [];
+
+  // Handle error state
+  const errorMessage = error 
+    ? 'data' in error 
+      ? (error.data as any)?.message || 'Failed to load training data'
+      : 'Failed to load training data'
+    : null;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -181,22 +191,46 @@ const TrainingCalendar: React.FC = () => {
             Today
           </Button>
 
-          {monthSummary && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            className="glass-card"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              'Refresh'
+            )}
+          </Button>
+
+          {monthSummary && !error && (
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              {monthSummary.categoriesBreakdown.slice(0, 3).map(cat => (
+              {topCategories.map(cat => (
                 <div key={cat.category} className="flex items-center gap-1">
-                  {getCategoryIcon(cat.category)}
-                  <span>{cat.category.split(' ')[0]} ({cat.count})</span>
+                  {getCategoryIcon(cat.category, 'w-3 h-3')}
+                  <span>{cat.category.split('_').join(' ')} ({cat.totalEvents})</span>
                 </div>
               ))}
               <div className="flex items-center gap-1">
                 <CalendarIcon className="w-3 h-3 text-primary" />
-                <span className="font-medium">Total ({monthSummary.totalCourses})</span>
+                <span className="font-medium">Total ({monthSummary.totalEvents})</span>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Error Alert */}
+      {errorMessage && (
+        <div className="px-6 mb-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex gap-6 overflow-hidden px-6 pb-6">
@@ -209,55 +243,65 @@ const TrainingCalendar: React.FC = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-7 gap-1 h-full overflow-hidden">
+            <div className="grid grid-cols-7 gap-1 h-full overflow-auto">
               {/* Day headers */}
               {DAY_NAMES.map(day => (
                 <div
                   key={day}
-                  className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-border flex-shrink-0"
+                  className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-border flex-shrink-0 sticky top-0 bg-background z-10"
                 >
                   {day}
                 </div>
               ))}
 
               {/* Calendar days */}
-              {calendarDays.map((calDay, index) => {
-                const dominantCategory = getDominantCategory(calDay.categories);
+              {calendarDays.map((dayData, index) => {
+                const dominantCategory = dayData.summary 
+                  ? getDominantCategory(dayData.summary.eventsByCategory)
+                  : null;
                 
                 return (
                   <div
-                    key={index}
+                    key={`${dayData.date}-${index}`}
                     className={cn(
                       "p-2 border border-border/50 cursor-pointer hover:bg-accent/50 transition-colors min-h-[80px] relative overflow-hidden",
-                      !calDay.isCurrentMonth && "text-muted-foreground bg-muted/30",
-                      calDay.isToday && "bg-primary/10 border-primary/30",
-                      selectedDate === calDay.date && "bg-primary/20 border-primary"
+                      !dayData.isCurrentMonth && "text-muted-foreground bg-muted/30",
+                      dayData.isToday && "bg-primary/10 border-primary/30 font-semibold",
+                      selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50",
+                      dayData.isWeekend && dayData.isCurrentMonth && "bg-accent/20"
                     )}
-                    onClick={() => handleDateClick(calDay.date, calDay.isCurrentMonth)}
+                    onClick={() => handleDateClick(dayData)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className={cn(
                         "text-sm font-medium",
-                        calDay.isToday && "text-primary font-bold"
+                        dayData.isToday && "text-primary font-bold"
                       )}>
-                        {calDay.day}
+                        {dayData.day}
                       </span>
-                      {calDay.coursesCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {calDay.coursesCount}
+                      {dayData.summary && dayData.summary.totalEvents > 0 && (
+                        <Badge variant="secondary" className="text-xs h-5">
+                          {dayData.summary.totalEvents}
                         </Badge>
                       )}
                     </div>
 
                     {/* Category indicators */}
-                    {calDay.isCurrentMonth && Object.keys(calDay.categories).length > 0 && (
+                    {dayData.isCurrentMonth && dayData.summary && (
                       <div className="space-y-1">
-                        {Object.entries(calDay.categories).slice(0, 3).map(([category, count]) => (
-                          <div key={category} className="flex items-center gap-1 text-xs">
-                            {getCategoryIcon(category)}
-                            <span className="truncate">{count}</span>
+                        {Object.entries(dayData.summary.eventsByCategory)
+                          .slice(0, 2)
+                          .map(([category, count]) => (
+                            <div key={category} className="flex items-center gap-1 text-xs">
+                              {getCategoryIcon(category as any, 'w-3 h-3')}
+                              <span className="truncate text-muted-foreground">{count}</span>
+                            </div>
+                          ))}
+                        {dayData.summary.completedEvents > 0 && (
+                          <div className="text-xs text-green-600 font-medium">
+                            ✓ {dayData.summary.completedEvents}
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
                   </div>
@@ -271,7 +315,7 @@ const TrainingCalendar: React.FC = () => {
         <div className="w-96 border-l border-border pl-6 flex flex-col overflow-hidden">
           <div className="flex-shrink-0 mb-4">
             <h2 className="text-lg font-semibold text-foreground">
-              Month Overview
+              Monthly Overview
             </h2>
             <p className="text-sm text-muted-foreground">
               Training statistics for {MONTH_NAMES[currentMonth]}
@@ -280,10 +324,17 @@ const TrainingCalendar: React.FC = () => {
 
           <div className="flex-1 overflow-hidden">
             {monthSummary ? (
-              <ConsultantMonthSummary summary={monthSummary} isLoading={isLoading} />
+              <MonthSummary 
+                summary={monthSummary} 
+                isLoading={isLoading}
+              />
             ) : (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                {isLoading ? (
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                ) : (
+                  <p className="text-sm text-muted-foreground">No data available</p>
+                )}
               </div>
             )}
           </div>

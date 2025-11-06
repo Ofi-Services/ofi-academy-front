@@ -9,6 +9,7 @@ export interface Course {
   duration?: string
   completed: boolean
   order: number
+  link?: string
 }
 
 export interface TrainingTrack {

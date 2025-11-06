@@ -1,91 +1,151 @@
+/**
+ * Training Calendar Types
+ * Generic types for displaying courses, internal trainings, and other training events
+ */
 
-// Types for Training Calendar
+// Generic training event types
+export enum TrainingEventType {
+  COURSE = 'course',
+  INTERNAL_TRAINING = 'internal_training',
+  WORKSHOP = 'workshop',
+  CERTIFICATION = 'certification',
+  CONFERENCE = 'conference',
+  MENTORING = 'mentoring',
+  SELF_STUDY = 'self_study',
+}
 
-export interface TrainingCourse {
+export enum TrainingStatus {
+  NOT_STARTED = 'not_started',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  OVERDUE = 'overdue',
+}
+
+export enum TrainingCategory {
+  TECHNICAL = 'technical',
+  LEADERSHIP = 'leadership',
+  SOFT_SKILLS = 'soft_skills',
+  COMPLIANCE = 'compliance',
+  PRODUCT = 'product',
+  SALES = 'sales',
+  CUSTOMER_SERVICE = 'customer_service',
+  OTHER = 'other',
+}
+
+// Base training event
+export interface TrainingEvent {
   id: string;
   title: string;
-  description: string;
-  enrolled: boolean;
-  progress: number; // 0-100
-  completedLessons: number;
-  totalLessons: number;
-  instructor: string;
-  category: string;
-  duration: string; // e.g., "8 hours"
-  thumbnail?: string;
+  type: TrainingEventType;
+  category: TrainingCategory;
+  status: TrainingStatus;
+  startDate: string; // ISO date string
+  endDate?: string; // ISO date string for multi-day events
+  duration?: number; // Duration in minutes
+  progress?: number; // 0-100 for courses/certifications
+  location?: string; // Physical location or 'online'
+  instructor?: string;
+  description?: string;
   tags?: string[];
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
-  startDate?: string; // ISO date
-  endDate?: string; // ISO date
-  scheduledDates?: string[]; // Array of ISO dates when lessons are scheduled
 }
 
-export interface DayTraining {
-  date: string; // ISO date
-  courses: TrainingCourse[];
-  totalCourses: number;
-  categories: {
-    [category: string]: number; // category name -> count
-  };
+// Daily summary for calendar view
+export interface DayTrainingSummary {
+  date: string; // ISO date string (YYYY-MM-DD)
+  events: TrainingEvent[];
+  totalEvents: number;
+  eventsByType: Record<TrainingEventType, number>;
+  eventsByCategory: Record<TrainingCategory, number>;
+  completedEvents: number;
 }
 
-export interface MonthTrainingSummary {
-  month: number; // 0-11
-  year: number;
-  totalCourses: number;
-  totalEnrolled: number;
-  averageProgress: number;
-  categoriesBreakdown: {
-    category: string;
-    count: number;
-    enrolled: number;
-    avgProgress: number;
-  }[];
-  topInstructors: {
-    name: string;
-    coursesCount: number;
-  }[];
-  dailySummary: {
-    day: number; // 1-31
-    coursesCount: number;
-    categories: {
-      [category: string]: number;
-    };
-  }[];
+// Category statistics
+export interface CategoryStats {
+  category: TrainingCategory;
+  totalEvents: number;
+  completedEvents: number;
+  inProgressEvents: number;
+  totalHours: number;
+  avgProgress: number; // Average progress percentage
 }
 
-// Props interfaces
-export interface TrainingCardProps {
-  course: TrainingCourse;
-  compact?: boolean;
-}
-
-export interface MonthSummaryProps {
-  summary: MonthTrainingSummary;
-  isLoading: boolean;
-}
-
-export interface CategoryBadgeProps {
-  category: string;
+// Type statistics
+export interface TypeStats {
+  type: TrainingEventType;
   count: number;
+  completedCount: number;
+  totalHours: number;
 }
 
-// API Response types (what backend should return)
-export interface GetMonthTrainingRequest {
-  month: number; // 0-11
+// Monthly summary
+export interface MonthTrainingSummary {
   year: number;
+  month: number; // 0-11
+  totalEvents: number;
+  completedEvents: number;
+  inProgressEvents: number;
+  notStartedEvents: number;
+  totalHours: number;
+  completedHours: number;
+  categoriesBreakdown: CategoryStats[];
+  typesBreakdown: TypeStats[];
+  dailySummaries: Record<string, DayTrainingSummary>; // Keyed by date string
+  upcomingDeadlines: TrainingEvent[];
+}
+
+// API Request/Response types
+export interface GetMonthTrainingRequest {
+  year: number;
+  month: number; // 0-11
+  userId?: string; // Optional if using authenticated user
 }
 
 export interface GetMonthTrainingResponse {
   success: boolean;
   data: MonthTrainingSummary;
+  message?: string;
 }
 
 export interface GetDayTrainingRequest {
-  date: string; // ISO date
+  date: string; // ISO date string
+  userId?: string;
 }
 
 export interface GetDayTrainingResponse {
   success: boolean;
-  data: DayTraining;
+  data: DayTrainingSummary;
+  message?: string;
+}
+
+// Component props
+export interface TrainingCalendarProps {
+  userId?: string;
+  defaultView?: 'month' | 'week' | 'day';
+  onEventClick?: (event: TrainingEvent) => void;
+  onDateClick?: (date: string) => void;
+}
+
+export interface MonthSummaryProps {
+  summary: MonthTrainingSummary;
+  isLoading: boolean;
+  onCategoryClick?: (category: TrainingCategory) => void;
+  onTypeClick?: (type: TrainingEventType) => void;
+}
+
+export interface DayDetailProps {
+  date: string;
+  summary: DayTrainingSummary;
+  isLoading: boolean;
+  onEventClick?: (event: TrainingEvent) => void;
+}
+
+// Calendar day cell data
+export interface CalendarDayData {
+  day: number;
+  date: string; // ISO date string
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isWeekend: boolean;
+  summary?: DayTrainingSummary;
 }

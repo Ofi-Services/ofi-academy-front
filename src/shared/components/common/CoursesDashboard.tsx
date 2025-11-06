@@ -2,7 +2,7 @@ import { useState, useMemo } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
 import { BookOpen, Award, TrendingUp, Search } from "lucide-react"
-import { useGetEnrolledCoursesQuery, useGetUserProgressQuery } from "../../store/coursesApi"
+import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { useAuth } from "@/shared/hooks/use-auth"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
@@ -22,11 +22,34 @@ export default function CoursesDashboard() {
     error: coursesError 
   } = useGetEnrolledCoursesQuery()
   
-  const { 
-    data: progress, 
-    isLoading: progressLoading, 
-    error: progressError 
-  } = useGetUserProgressQuery(user?.id || "")
+  // Commented out: Remote progress query
+  // const { 
+  //   data: progress, 
+  //   isLoading: progressLoading, 
+  //   error: progressError 
+  // } = useGetUserProgressQuery(user?.id || "")
+
+  // Calculate progress locally from courses data
+  const progress = useMemo(() => {
+    if (!courses) return null
+    
+    const activeCourses = courses.filter(course => 
+      (course.progress_percentage || 0) > 0 && (course.progress_percentage || 0) < 100
+    ).length
+    
+    const totalProgress = courses.reduce((sum, course) => sum + (course.progress_percentage || 0), 0)
+    const averageProgress = courses.length > 0 ? Math.round(totalProgress / courses.length) : 0
+    
+    const completedModules = courses.reduce((sum, course) => 
+      sum + (course.completed_courses || 0), 0
+    )
+    
+    return {
+      activeCourses,
+      averageProgress,
+      completedModules
+    }
+  }, [courses])
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -51,8 +74,8 @@ export default function CoursesDashboard() {
     })
   }, [courses, searchTerm, selectedCategory])
 
-  // Loading state
-  if (coursesLoading || progressLoading) {
+  // Loading state (only courses now)
+  if (coursesLoading) {
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">My Learning Progress</h1>
@@ -80,8 +103,8 @@ export default function CoursesDashboard() {
     )
   }
 
-  // Error state
-  if (coursesError || progressError) {
+  // Error state (only courses now)
+  if (coursesError) {
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">My Learning Progress</h1>
@@ -174,10 +197,10 @@ export default function CoursesDashboard() {
               courseId={course.id}
               title={course.title}
               description={course.description}
-              progress={course.progress || 0}
-              completedLessons={course.completedLessons || 0}
-              totalLessons={course.totalLessons || 0}
-              instructor={course.instructor}
+              progress={course.progress_percentage || 0}
+              completedLessons={course.completed_courses || 0}
+              totalLessons={course.total_courses || 0}
+              platform={course.platform}
               category={course.category}
               duration={course.duration}
             />

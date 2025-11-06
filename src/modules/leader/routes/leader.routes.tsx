@@ -5,10 +5,11 @@ import AuthenticatedLayout from "@/shared/components/common/AuthenticatedLayout"
 
 // Leader components
 import LeaderDashboard from "../pages/LeaderPage"
+import { Calendar } from "@/shared/components/ui/calendar"
 
 // Leader pages
 const LeaderReports = () => <div>Leader Reports Page</div>
-const LeaderPlans = () => <div>Leader Training Plans Page</div>
+const LeaderPlans = () => <Calendar />
 const LeaderCertificates = () => <div>Leader Certificates Page</div>
 const LeaderMessages = () => <div>Leader Messages Page</div>
 const LeaderResources = () => <div>Leader Resources Page</div>

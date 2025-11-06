@@ -2,12 +2,15 @@
 import { Route } from "react-router-dom"
 import ProtectedRoute from "@/core/routes/ProtectedRoute"
 import AuthenticatedLayout from "@/shared/components/common/AuthenticatedLayout"
+import TrainingCalendar from "@/shared/components/common/calendar/CalendarSummary"
+import TrainingResources from "../pages/TrainingResoursesPage"
+import WorkInProgress from "@/shared/components/common/WorkInProgressPage"
 
 
 // Consultant pages
-const Schedule = () => <div>Schedule Page</div>
-const Resources = () => <div>Resources Page</div>
-const Forums = () => <div>Forums Page</div>
+const Schedule = () => <TrainingCalendar />
+const Resources = () =><TrainingResources />
+const Forums = () => <WorkInProgress />
 
 /**
  * Consultant Routes

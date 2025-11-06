@@ -11,10 +11,10 @@ import {
   Image as ImageIcon,
 } from "lucide-react"
 import { useToast } from "@/shared/hooks/use-toast"
-import { CourseModule } from "@/shared/store/coursesApi"
+import { Course } from "@/shared/store/coursesApi"
 
 interface ModuleItemProps {
-  module: CourseModule
+  module: Course
   isCompleted: boolean
   onToggle: (moduleId: string) => void
   files: File[]
@@ -98,7 +98,7 @@ export default function CourseModuleItem({
                 isCompleted ? "text-primary" : ""
               }`}
             >
-              Módulo {module.order}: {module.title}
+              {module.title}
             </Label>
           </div>
           {module.description && (

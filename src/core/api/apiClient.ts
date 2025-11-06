@@ -15,7 +15,7 @@ interface ApiErrorResponse {
  * Configuración del entorno para la API
  */
 export const API_CONFIG = {
-  BASE_URL: "https://5796fe4b3787.ngrok-free.app" ,//import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
+  BASE_URL: "http://localhost:8000" ,//import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   TIMEOUT: 30000, // 30 segundos
   VERSION: "v1",
 };

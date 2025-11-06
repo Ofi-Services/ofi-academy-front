@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
 // Types
-export interface CourseModule {
+export interface Course {
   id: string
   title: string
   description?: string
@@ -10,19 +11,19 @@ export interface CourseModule {
   order: number
 }
 
-export interface Course {
+export interface TrainingTrack {
   id: string
   title: string
   description?: string
   enrolled: boolean
-  progress: number
-  completedLessons: number
-  totalLessons: number
-  instructor?: string
+  progress_percentage: number
+  completed_courses: number
+  total_courses: number
+  platform?: string
   category?: string
   duration?: string
   thumbnail?: string
-  modules?: CourseModule[]
+  courses?: Course[]
 }
 
 export interface UserProgress {
@@ -46,34 +47,63 @@ export interface Schedule {
   location?: string
 }
 
-export interface UpdateProgressPayload {
-  courseId: string
-  completedModules: string[]
-  progress: number
-  completedLessons: number
+// Base query with authentication
+const baseQuery = fetchBaseQuery({
+  baseUrl: 'http://localhost:8000/api',
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem('ofi_token')
+    
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+    
+    return headers
+  },
+})
+
+// Base query with reauthentication handling
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions)
+  
+  // If response is 401 (unauthorized), logout
+  if (result.error && result.error.status === 401) {
+    localStorage.removeItem('ofi_user')
+    localStorage.removeItem('ofi_token')
+    window.location.href = '/login'
+  }
+  
+  return result
 }
 
 // Create API
 export const coursesApi = createApi({
   reducerPath: 'consultantApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api/consultant' }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Courses', 'Progress', 'Schedule'],
   endpoints: (builder) => ({
     // Get all courses
-    getAllCourses: builder.query<Course[], void>({
+    getAllCourses: builder.query<TrainingTrack[], void>({
       query: () => '/courses',
       providesTags: ['Courses'],
     }),
 
     // Get enrolled courses only
-    getEnrolledCourses: builder.query<Course[], void>({
-      query: () => '/courses/enrolled',
+    getEnrolledCourses: builder.query<TrainingTrack[], void>({
+      query: () => '/training-tracks/',
+      transformResponse: (response: TrainingTrack[]) => {
+        console.log('[getEnrolledCourses] Raw response:', response)
+        return response
+      },
       providesTags: ['Courses'],
     }),
 
     // Get course details with modules
-    getCourseDetails: builder.query<Course, string>({
-      query: (courseId) => `/courses/${courseId}`,
+    getCourseDetails: builder.query<TrainingTrack, string>({
+      query: (courseId) => `/training-tracks/${courseId}/`,
       providesTags: (result, error, courseId) => [{ type: 'Courses', id: courseId }],
     }),
 
@@ -90,7 +120,7 @@ export const coursesApi = createApi({
     }),
 
     // Enroll in course
-    enrollInCourse: builder.mutation<Course, string>({
+    enrollInCourse: builder.mutation<TrainingTrack, string>({
       query: (courseId) => ({
         url: `/courses/${courseId}/enroll`,
         method: 'POST',
@@ -99,23 +129,20 @@ export const coursesApi = createApi({
     }),
 
     // Update course progress with file upload support
-    updateCourseProgress: builder.mutation<Course, FormData>({
+    updateCourseProgress: builder.mutation<TrainingTrack, FormData>({
       query: (formData) => {
-        // Extract courseId from FormData for URL construction
-        const courseId = formData.get('courseId') as string
+        const trackId = formData.get('trackId') as string
 
         return {
-          url: `/courses/${courseId}/progress`,
+          url: `/training-tracks/${trackId}/`,
           method: 'PATCH',
           body: formData,
-          // Don't set Content-Type header - let the browser set it with boundary
-          // This is required for proper multipart/form-data handling
         }
       },
       invalidatesTags: (result, error, formData) => {
-        const courseId = formData.get('courseId') as string
+        const trackId = formData.get('trackId') as string
         return [
-          { type: 'Courses', id: courseId },
+          { type: 'Courses', id: trackId },
           'Courses',
           'Progress',
         ]

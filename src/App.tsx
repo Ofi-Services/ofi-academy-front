@@ -9,15 +9,6 @@ import { store } from "./shared/store/store";
 import { AuthProvider } from "./shared/hooks/use-auth";
 import AppRoutes from "./core/routes/AppRoutes";
 
-// ✅ Start mock service worker only if VITE_USE_MOCKS is true
-if (import.meta.env.VITE_USE_MOCKS === "true") {
-  import("./mocks/mocks-browser").then(({ worker }) => {
-    worker.start({
-      onUnhandledRequest: "bypass",
-    });
-  });
-}
-
 export const App = () => (
   <Provider store={store}>
     <TooltipProvider>

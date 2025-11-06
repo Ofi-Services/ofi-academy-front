@@ -12,7 +12,7 @@ interface CourseCardProps {
   progress: number
   completedLessons: number
   totalLessons: number
-  instructor?: string
+  platform?: string
   category?: string
   duration?: string
 }
@@ -64,7 +64,7 @@ export default function CourseCard({
   progress,
   completedLessons,
   totalLessons,
-  instructor,
+  platform,
   category,
   duration,
 }: CourseCardProps) {
@@ -118,12 +118,12 @@ export default function CourseCard({
 
         <CardContent className="space-y-4">
           {/* Instructor and Duration */}
-          {(instructor || duration) && (
+          {(platform || duration) && (
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              {instructor && (
+              {platform && (
                 <div className="flex items-center gap-1.5">
                   <User className="w-4 h-4" />
-                  <span className="line-clamp-1">{instructor}</span>
+                  <span className="line-clamp-1">{platform}</span>
                 </div>
               )}
               {duration && (

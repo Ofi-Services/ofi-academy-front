@@ -6,6 +6,9 @@ import {
   type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux"; // ← IMPORTAR
+import { baseApi } from "@/core/api/baseApi"; // ← IMPORTAR
+import { coursesApi } from "@/shared/store/coursesApi"; // ← IMPORTAR
 
 type UserRole = "consultant" | "leader" | "superuser";
 
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // ← AGREGAR
 
   useEffect(() => {
     const storedUser = localStorage.getItem("ofi_user");
@@ -47,13 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch("https://5796fe4b3787.ngrok-free.app/api/auth/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await fetch(
+        "http://localhost:8000/api/auth/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
 
       if (!response.ok) {
         console.error("[AuthProvider] Login failed:", response.statusText);
@@ -63,14 +70,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
 
-      // Espera que el backend devuelva algo como:
-      // { user: { id, name, email, role, avatar }, token: "..." }
-      const userData: User = data.user;
+      const userData: User = {
+        id: String(data.user.id),
+        name:
+          data.user.first_name || data.user.last_name
+            ? `${data.user.first_name} ${data.user.last_name}`.trim()
+            : data.user.username,
+        email: data.user.email || data.user.username,
+        role: "consultant",
+        avatar: "/default-avatar.png",
+      };
+
       setUser(userData);
       localStorage.setItem("ofi_user", JSON.stringify(userData));
-      localStorage.setItem("ofi_token", data.token);
+      localStorage.setItem("ofi_token", data.access);
 
-      // Redirección según el rol
       if (userData.role === "consultant") {
         navigate("/dashboard");
       } else if (userData.role === "leader") {
@@ -92,6 +106,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem("ofi_user");
     localStorage.removeItem("ofi_token");
+    
+    // Limpiar el caché de RTK Query de ambas APIs
+    dispatch(baseApi.util.resetApiState());
+    dispatch(coursesApi.util.resetApiState());
+    
     navigate("/login");
   };
 

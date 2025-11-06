@@ -20,14 +20,14 @@ export default function LoginPage() {
 
     const success = await login(email, password)
     if (!success) {
-      setError("Credenciales incorrectas. Intenta de nuevo.")
+      setError("Incorrect credentials. Please try again.")
       setIsLoading(false)
     }
   }
 
   const fillConsultant = () => {
-    setEmail("s.test@ofiservices.com")
-    setPassword("PassTest123!")
+    setEmail("d.mendoza@ofiservices.com")
+    setPassword("Passpass123!")
   }
 
   const fillLeader = () => {
@@ -50,7 +50,7 @@ export default function LoginPage() {
               Ofi <span className="text-primary">Academy</span>
             </h1>
             <p className="text-muted-foreground mt-2 text-base">
-              Impulsa tu aprendizaje al siguiente nivel
+              Boost your learning to the next level
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-base text-foreground">
-                Contraseña
+                Password
               </Label>
               <Input
                 id="password"
@@ -98,7 +98,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
             >
-              {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="h-5 w-5 text-primary" />
               <p className="text-sm font-semibold text-foreground">
-                Credenciales de Demo
+                Demo Credentials
               </p>
             </div>
             <div className="space-y-3">
@@ -116,9 +116,9 @@ export default function LoginPage() {
                 onClick={fillConsultant}
                 className="w-full text-left p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
               >
-                <p className="text-sm font-medium text-foreground">Consultor</p>
+                <p className="text-sm font-medium text-foreground">Consultant</p>
                 <p className="text-xs text-muted-foreground">
-                  s.test@ofiservices.com
+                  d.mendoza@ofiservices.com
                 </p>
               </button>
               <button
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 onClick={fillLeader}
                 className="w-full text-left p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
               >
-                <p className="text-sm font-medium text-foreground">Líder</p>
+                <p className="text-sm font-medium text-foreground">Leader</p>
                 <p className="text-xs text-muted-foreground">
                   carlos@ofi.com / leader
                 </p>
@@ -143,25 +143,25 @@ export default function LoginPage() {
 
         <div className="relative z-10 max-w-lg">
           <h2 className="text-5xl font-bold mb-6 text-balance leading-tight">
-            Transforma tu carrera con aprendizaje continuo
+            Transform your career through continuous learning
           </h2>
           <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-            Accede a cursos especializados, haz seguimiento de tu progreso y alcanza tus objetivos profesionales.
+            Access specialized courses, track your progress, and achieve your professional goals.
           </p>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-6">
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">50+</p>
-              <p className="text-sm text-primary-foreground/80">Cursos</p>
+              <p className="text-sm text-primary-foreground/80">Courses</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">200+</p>
-              <p className="text-sm text-primary-foreground/80">Consultores</p>
+              <p className="text-sm text-primary-foreground/80">Consultants</p>
             </div>
             <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4">
               <p className="text-3xl font-bold text-primary-foreground">95%</p>
-              <p className="text-sm text-primary-foreground/80">Satisfacción</p>
+              <p className="text-sm text-primary-foreground/80">Satisfaction</p>
             </div>
           </div>
         </div>

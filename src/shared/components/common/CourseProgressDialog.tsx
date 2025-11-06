@@ -32,6 +32,10 @@ interface ModuleFiles {
   [moduleId: string]: File[]
 }
 
+interface ModuleNotes {
+  [moduleId: string]: string
+}
+
 export default function CourseProgressDialog({
   courseId,
   open,
@@ -40,7 +44,9 @@ export default function CourseProgressDialog({
   const { toast } = useToast()
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set())
   const [moduleFiles, setModuleFiles] = useState<ModuleFiles>({})
+  const [moduleNotes, setModuleNotes] = useState<ModuleNotes>({})
   const [previewUrls, setPreviewUrls] = useState<{ [moduleId: string]: string[] }>({})
+  const [initiallyCompletedModules, setInitiallyCompletedModules] = useState<Set<string>>(new Set())
 
   // RTK Query hooks
   const { data: course, isLoading, error } = useGetCourseDetailsQuery(courseId, {
@@ -50,11 +56,12 @@ export default function CourseProgressDialog({
 
   // Initialize selected modules when data loads
   useEffect(() => {
-    if (course?.modules) {
-      const completedModuleIds = course.modules
+    if (course?.courses) {
+      const completedModuleIds = course.courses
         .filter((module) => module.completed)
         .map((module) => module.id)
       setSelectedModules(new Set(completedModuleIds))
+      setInitiallyCompletedModules(new Set(completedModuleIds))
     }
   }, [course])
 
@@ -67,16 +74,35 @@ export default function CourseProgressDialog({
       })
       setPreviewUrls({})
       setModuleFiles({})
+      setModuleNotes({})
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const handleModuleToggle = (moduleId: string) => {
     setSelectedModules((prev) => {
       const newSet = new Set(prev)
+      
       if (newSet.has(moduleId)) {
+        // Allow unchecking
         newSet.delete(moduleId)
       } else {
-        newSet.add(moduleId)
+        // Only allow checking if:
+        // 1. It was already completed in the DB, OR
+        // 2. There are uploaded files for this module
+        const wasInitiallyCompleted = initiallyCompletedModules.has(moduleId)
+        const hasFiles = moduleFiles[moduleId] && moduleFiles[moduleId].length > 0
+        
+        if (wasInitiallyCompleted || hasFiles) {
+          newSet.add(moduleId)
+        } else {
+          // Show error message if trying to check without files
+          toast({
+            title: "⚠️ File required",
+            description: "You must upload at least one image to mark this module as completed",
+            variant: "destructive",
+          })
+        }
       }
       return newSet
     })
@@ -104,9 +130,16 @@ export default function CourseProgressDialog({
       [moduleId]: [...(prev[moduleId] || []), ...newPreviewUrls],
     }))
 
+    // Automatically mark the module as completed when uploading files
+    setSelectedModules((prev) => {
+      const newSet = new Set(prev)
+      newSet.add(moduleId)
+      return newSet
+    })
+
     toast({
-      title: "✅ Imagen(es) agregada(s)",
-      description: `${imageFiles.length} imagen(es) cargada(s) para el módulo`,
+      title: "✅ Image(s) added",
+      description: `${imageFiles.length} image(s) loaded for the module`,
       variant: "default",
     })
   }
@@ -139,41 +172,58 @@ export default function CourseProgressDialog({
       }
       return { ...prev, [moduleId]: newUrls }
     })
+
+    // If all files are removed and the module was NOT initially completed,
+    // automatically uncheck the module
+    const remainingFiles = (moduleFiles[moduleId] || []).filter((_, i) => i !== index)
+    if (remainingFiles.length === 0 && !initiallyCompletedModules.has(moduleId)) {
+      setSelectedModules((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(moduleId)
+        return newSet
+      })
+    }
+  }
+
+  const handleNoteChange = (moduleId: string, note: string) => {
+    setModuleNotes((prev) => ({
+      ...prev,
+      [moduleId]: note,
+    }))
   }
 
   const handleSave = async () => {
     try {
-      const completedModulesArray = Array.from(selectedModules)
-      const totalModules = course?.modules?.length || 0
-      const completedCount = completedModulesArray.length
-      const progress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0
-
-      // Prepare FormData for file upload
       const formData = new FormData()
-      formData.append("courseId", courseId)
-      formData.append("completedModules", JSON.stringify(completedModulesArray))
-      formData.append("progress", progress.toString())
-      formData.append("completedLessons", completedCount.toString())
+      
+      // Add the training track ID
+      formData.append("trackId", courseId)
 
-      // Add files to FormData
+      // Add files using the backend format: course_{courseId}
       Object.entries(moduleFiles).forEach(([moduleId, files]) => {
-        files.forEach((file, index) => {
-          formData.append(`module_${moduleId}_file_${index}`, file)
-        })
+        // For each module, we'll send only the first file (or you could send all)
+        // The backend expects: course_1, course_2, etc.
+        if (files.length > 0) {
+          formData.append(`course_${moduleId}`, files[0])
+        }
       })
 
-      // Add metadata about which modules have files
-      const modulesWithFiles = Object.keys(moduleFiles).reduce((acc, moduleId) => {
-        acc[moduleId] = moduleFiles[moduleId].length
-        return acc
-      }, {} as { [key: string]: number })
-      formData.append("modulesWithFiles", JSON.stringify(modulesWithFiles))
+      // Add notes using the backend format: note_{courseId}
+      Object.entries(moduleNotes).forEach(([moduleId, note]) => {
+        if (note && note.trim()) {
+          formData.append(`note_${moduleId}`, note)
+        }
+      })
 
       await updateProgress(formData).unwrap()
 
+      const totalModules = course?.courses?.length || 0
+      const completedCount = selectedModules.size
+      const progress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0
+
       toast({
-        title: "✅ Progreso actualizado exitosamente",
-        description: `Has completado ${completedCount} de ${totalModules} módulos (${progress}%)`,
+        title: "✅ Progress updated successfully",
+        description: `You have completed ${completedCount} of ${totalModules} modules (${progress}%)`,
         variant: "default",
       })
 
@@ -183,13 +233,14 @@ export default function CourseProgressDialog({
       })
       setModuleFiles({})
       setPreviewUrls({})
+      setModuleNotes({})
 
       onOpenChange(false)
     } catch (error) {
       console.error("Error updating progress:", error)
       toast({
-        title: "❌ Error al actualizar progreso",
-        description: "Hubo un error al guardar tu progreso. Por favor intenta nuevamente.",
+        title: "❌ Error updating progress",
+        description: "There was an error saving your progress. Please try again.",
         variant: "destructive",
       })
     }
@@ -197,23 +248,23 @@ export default function CourseProgressDialog({
 
   // Calculate progress percentage
   const currentProgress = useMemo(() => {
-    if (!course?.modules) return 0
-    const totalModules = course.modules.length
+    if (!course?.courses) return 0
+    const totalModules = course.courses.length
     const completedCount = selectedModules.size
     return totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0
   }, [course, selectedModules])
 
   // Safely sorted modules to avoid immutability errors
   const sortedModules = useMemo(() => {
-    return [...(course?.modules || [])].sort((a, b) => a.order - b.order)
+    return [...(course?.courses || [])].sort((a, b) => a.order - b.order)
   }, [course])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Progreso del Curso</DialogTitle>
-          <DialogDescription>Rastrea y actualiza tu progreso de aprendizaje</DialogDescription>
+          <DialogTitle className="text-2xl">Course Progress</DialogTitle>
+          <DialogDescription>Track and update your learning progress</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -230,7 +281,7 @@ export default function CourseProgressDialog({
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Error al cargar detalles del curso. Por favor intenta nuevamente.
+              Error loading course details. Please try again.
             </AlertDescription>
           </Alert>
         ) : course ? (
@@ -248,10 +299,10 @@ export default function CourseProgressDialog({
               </div>
 
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                {course.instructor && (
+                {course.platform && (
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
-                    <span>{course.instructor}</span>
+                    <span>{course.platform}</span>
                   </div>
                 )}
                 {course.duration && (
@@ -265,7 +316,7 @@ export default function CourseProgressDialog({
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Progreso Actual</span>
+                  <span className="text-muted-foreground">Current Progress</span>
                   <span className="font-semibold text-lg">{currentProgress}%</span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -281,7 +332,7 @@ export default function CourseProgressDialog({
                   />
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {selectedModules.size} de {course.modules?.length || 0} módulos completados
+                  {selectedModules.size} of {course.courses?.length || 0} modules completed
                 </div>
               </div>
             </div>
@@ -291,9 +342,9 @@ export default function CourseProgressDialog({
             {/* Modules List */}
             <div className="space-y-2 flex-1 min-h-0">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Módulos del Curso</Label>
+                <Label className="text-base font-semibold">Course Modules</Label>
                 <span className="text-sm text-muted-foreground">
-                  {selectedModules.size}/{course.modules?.length || 0} seleccionados
+                  {selectedModules.size}/{course.courses?.length || 0} selected
                 </span>
               </div>
 
@@ -310,13 +361,15 @@ export default function CourseProgressDialog({
                         previewUrls={previewUrls[module.id] || []}
                         onFilesChange={handleFilesChange}
                         onFileRemove={handleFileRemove}
+                        note={moduleNotes[module.id] || ""}
+                        onNoteChange={handleNoteChange}
                       />
                     ))
                   ) : (
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        No hay módulos disponibles para este curso.
+                        No modules available for this course.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -331,7 +384,7 @@ export default function CourseProgressDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isUpdating}
               >
-                Cancelar
+                Cancel
               </Button>
               <Button
                 type="button"
@@ -339,7 +392,7 @@ export default function CourseProgressDialog({
                 disabled={isUpdating}
                 className="min-w-[100px]"
               >
-                {isUpdating ? "Guardando..." : "Guardar Progreso"}
+                {isUpdating ? "Saving..." : "Save Progress"}
               </Button>
             </DialogFooter>
           </>

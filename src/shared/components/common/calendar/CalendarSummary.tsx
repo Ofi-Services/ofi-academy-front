@@ -12,7 +12,14 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { cn } from '@/shared/lib/utils';
 import { MONTH_NAMES, DAY_NAMES, CALENDAR_GRID_SIZE } from './constants';
 import { MonthSummary } from './MonthSummary';
-import { getCategoryIcon, getDominantCategory, getDateString, isWeekend } from './utils';
+import { 
+  getCategoryIcon, 
+  getDominantCategory, 
+  getDateString, 
+  isWeekend,
+  calculateCompletionRate,
+  isTrackOverdue,
+} from './utils';
 import { useGetMonthTrainingQuery } from './store/TrainingCalendarApi';
 import type { 
   CalendarDayData, 
@@ -21,11 +28,11 @@ import type {
 
 /**
  * Training Calendar Component with RTK Query
- * This version uses Redux Toolkit Query for data fetching
+ * Updated for Training Tracks
  */
 const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
   userId,
-  onEventClick,
+  onTrackClick,
   onDateClick
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -140,8 +147,10 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
 
   // Get top categories for header display
   const topCategories = monthSummary?.categoriesBreakdown
-    .sort((a, b) => b.totalEvents - a.totalEvents)
-    .slice(0, 3) || [];
+    ? [...monthSummary.categoriesBreakdown]
+        .sort((a, b) => b.totalTracks - a.totalTracks)
+        .slice(0, 3)
+    : [];
 
   // Handle error state
   const errorMessage = error 
@@ -210,12 +219,12 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
               {topCategories.map(cat => (
                 <div key={cat.category} className="flex items-center gap-1">
                   {getCategoryIcon(cat.category, 'w-3 h-3')}
-                  <span>{cat.category.split('_').join(' ')} ({cat.totalEvents})</span>
+                  <span>{cat.category} ({cat.totalTracks})</span>
                 </div>
               ))}
               <div className="flex items-center gap-1">
                 <CalendarIcon className="w-3 h-3 text-primary" />
-                <span className="font-medium">Total ({monthSummary.totalEvents})</span>
+                <span className="font-medium">Total ({monthSummary.totalTracks})</span>
               </div>
             </div>
           )}
@@ -257,8 +266,14 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
               {/* Calendar days */}
               {calendarDays.map((dayData, index) => {
                 const dominantCategory = dayData.summary 
-                  ? getDominantCategory(dayData.summary.eventsByCategory)
+                  ? getDominantCategory(dayData.summary.tracksByCategory)
                   : null;
+                
+                const completionRate = dayData.summary
+                  ? calculateCompletionRate(dayData.summary.completedTracks, dayData.summary.totalTracks)
+                  : 0;
+
+                const hasOverdueTracks = dayData.summary?.tracks.some(isTrackOverdue) || false;
                 
                 return (
                   <div
@@ -279,9 +294,12 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                       )}>
                         {dayData.day}
                       </span>
-                      {dayData.summary && dayData.summary.totalEvents > 0 && (
-                        <Badge variant="secondary" className="text-xs h-5">
-                          {dayData.summary.totalEvents}
+                      {dayData.summary && dayData.summary.totalTracks > 0 && (
+                        <Badge 
+                          variant={hasOverdueTracks ? "destructive" : "secondary"} 
+                          className="text-xs h-5"
+                        >
+                          {dayData.summary.totalTracks}
                         </Badge>
                       )}
                     </div>
@@ -289,17 +307,22 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                     {/* Category indicators */}
                     {dayData.isCurrentMonth && dayData.summary && (
                       <div className="space-y-1">
-                        {Object.entries(dayData.summary.eventsByCategory)
+                        {Object.entries(dayData.summary.tracksByCategory)
                           .slice(0, 2)
                           .map(([category, count]) => (
                             <div key={category} className="flex items-center gap-1 text-xs">
-                              {getCategoryIcon(category as any, 'w-3 h-3')}
+                              {getCategoryIcon(category, 'w-3 h-3')}
                               <span className="truncate text-muted-foreground">{count}</span>
                             </div>
                           ))}
-                        {dayData.summary.completedEvents > 0 && (
+                        {dayData.summary.completedTracks > 0 && (
                           <div className="text-xs text-green-600 font-medium">
-                            ✓ {dayData.summary.completedEvents}
+                            ✓ {dayData.summary.completedTracks}
+                          </div>
+                        )}
+                        {completionRate > 0 && completionRate < 100 && (
+                          <div className="text-xs text-blue-600 font-medium">
+                            {completionRate}%
                           </div>
                         )}
                       </div>

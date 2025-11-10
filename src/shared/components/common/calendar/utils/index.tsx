@@ -1,116 +1,107 @@
 /**
  * Training Calendar Utilities
+ * Updated for Training Tracks
  */
 
 import {
   BookOpen,
-  Users,
-  Wrench,
-  Award,
-  Presentation,
-  UserCheck,
-  Book,
   Code,
-  Heart,
+  GraduationCap,
+  Laptop,
+  Database,
+  Cloud,
   Shield,
-  Package,
+  Smartphone,
   TrendingUp,
-  Headphones,
-  MoreHorizontal,
-} from 'lucide-react';
-import { TrainingCategory, TrainingEventType, DayTrainingSummary } from '../types';
-import { CATEGORY_CONFIG, EVENT_TYPE_CONFIG } from '../constants';
+  } from 'lucide-react';
+import { TrainingTrack, DayTrainingSummary } from '../types';
+import { getCategoryColor, getPlatformColor } from '../constants';
 
 /**
- * Get icon component for a training category
+ * Get icon component for a category (dynamic based on category name)
  */
-export const getCategoryIcon = (category: TrainingCategory, className: string = 'w-4 h-4') => {
-  const iconMap = {
-    technical: Code,
-    leadership: Users,
-    soft_skills: Heart,
-    compliance: Shield,
-    product: Package,
-    sales: TrendingUp,
-    customer_service: Headphones,
-    other: MoreHorizontal,
+export const getCategoryIcon = (category: string, className: string = 'w-4 h-4') => {
+  const iconMap: Record<string, any> = {
+    'DevOps': Cloud,
+    'Frontend Development': Code,
+    'Backend Development': Database,
+    'Data Science': TrendingUp,
+    'Machine Learning': TrendingUp,
+    'Cloud Computing': Cloud,
+    'Security': Shield,
+    'Database': Database,
+    'Mobile Development': Smartphone,
+    'Leadership': GraduationCap,
+    'Soft Skills': BookOpen,
   };
 
-  const Icon = iconMap[category] || MoreHorizontal;
-  const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.other;
+  const Icon = iconMap[category] || BookOpen;
+  const config = getCategoryColor(category);
 
   return <Icon className={`${className} ${config.color}`} />;
 };
 
 /**
- * Get icon component for a training event type
+ * Get icon component for a platform
  */
-export const getEventTypeIcon = (type: TrainingEventType, className: string = 'w-4 h-4') => {
-  const iconMap = {
-    course: BookOpen,
-    internal_training: Users,
-    workshop: Wrench,
-    certification: Award,
-    conference: Presentation,
-    mentoring: UserCheck,
-    self_study: Book,
+export const getPlatformIcon = (platform: string, className: string = 'w-4 h-4') => {
+  const iconMap: Record<string, any> = {
+    'Celonis': Laptop,
+    'Udemy': BookOpen,
+    'Coursera': GraduationCap,
+    'LinkedIn': Code,
+    'Pluralsight': Code,
   };
 
-  const Icon = iconMap[type] || BookOpen;
-  const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.course;
+  const Icon = iconMap[platform] || BookOpen;
+  const config = getPlatformColor(platform);
 
   return <Icon className={`${className} ${config.color}`} />;
 };
 
 /**
- * Get the dominant category for a day based on event count
+ * Get the dominant category for a day based on track count
  */
 export const getDominantCategory = (
-  eventsByCategory: Record<TrainingCategory, number>
-): TrainingCategory | null => {
-  const entries = Object.entries(eventsByCategory) as [TrainingCategory, number][];
+  tracksByCategory: Record<string, number>
+): string | null => {
+  const entries = Object.entries(tracksByCategory);
   if (entries.length === 0) return null;
 
   return entries.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev))[0];
 };
 
 /**
- * Get the dominant event type for a day based on event count
+ * Get the dominant platform for a day based on track count
  */
-export const getDominantEventType = (
-  eventsByType: Record<TrainingEventType, number>
-): TrainingEventType | null => {
-  const entries = Object.entries(eventsByType) as [TrainingEventType, number][];
+export const getDominantPlatform = (
+  tracksByPlatform: Record<string, number>
+): string | null => {
+  const entries = Object.entries(tracksByPlatform);
   if (entries.length === 0) return null;
 
   return entries.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev))[0];
 };
 
 /**
- * Format duration from minutes to human-readable string
+ * Calculate completion percentage
  */
-export const formatDuration = (minutes?: number): string => {
-  if (!minutes) return '—';
-  
-  if (minutes < 60) {
-    return `${minutes}m`;
-  }
-  
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  
-  if (remainingMinutes === 0) {
-    return `${hours}h`;
-  }
-  
-  return `${hours}h ${remainingMinutes}m`;
+export const calculateCompletionPercentage = (
+  completed: number,
+  total: number
+): number => {
+  if (total === 0) return 0;
+  return Math.round((completed / total) * 100);
 };
 
 /**
- * Calculate total hours from minutes
+ * Calculate completion rate (for display)
  */
-export const minutesToHours = (minutes: number): number => {
-  return Math.round((minutes / 60) * 10) / 10;
+export const calculateCompletionRate = (
+  completed: number,
+  total: number
+): number => {
+  return calculateCompletionPercentage(completed, total);
 };
 
 /**
@@ -125,7 +116,7 @@ export const isToday = (date: string): boolean => {
  * Check if a date is a weekend
  */
 export const isWeekend = (date: string): boolean => {
-  const day = new Date(date).getDay();
+  const day = new Date(date + 'T00:00:00').getDay();
   return day === 0 || day === 6;
 };
 
@@ -133,14 +124,15 @@ export const isWeekend = (date: string): boolean => {
  * Get date string in ISO format (YYYY-MM-DD)
  */
 export const getDateString = (year: number, month: number, day: number): string => {
-  return new Date(year, month, day).toISOString().split('T')[0];
+  const date = new Date(year, month, day);
+  return date.toISOString().split('T')[0];
 };
 
 /**
  * Parse ISO date string to date components
  */
 export const parseDateString = (dateString: string): { year: number; month: number; day: number } => {
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'T00:00:00');
   return {
     year: date.getFullYear(),
     month: date.getMonth(),
@@ -160,14 +152,6 @@ export const getProgressColor = (progress: number): string => {
 };
 
 /**
- * Calculate completion rate
- */
-export const calculateCompletionRate = (completed: number, total: number): number => {
-  if (total === 0) return 0;
-  return Math.round((completed / total) * 100);
-};
-
-/**
  * Sort day summaries by date
  */
 export const sortDaySummaries = (summaries: DayTrainingSummary[]): DayTrainingSummary[] => {
@@ -175,15 +159,88 @@ export const sortDaySummaries = (summaries: DayTrainingSummary[]): DayTrainingSu
 };
 
 /**
- * Get category label
+ * Get category label (formatted nicely)
  */
-export const getCategoryLabel = (category: TrainingCategory): string => {
-  return CATEGORY_CONFIG[category]?.label || category;
+export const getCategoryLabel = (category: string): string => {
+  return category;
 };
 
 /**
- * Get event type label
+ * Get platform label
  */
-export const getEventTypeLabel = (type: TrainingEventType): string => {
-  return EVENT_TYPE_CONFIG[type]?.label || type;
+export const getPlatformLabel = (platform: string): string => {
+  return platform;
+};
+
+/**
+ * Format track progress as text
+ */
+export const formatTrackProgress = (track: TrainingTrack): string => {
+  return `${track.completed_courses}/${track.total_courses} courses`;
+};
+
+/**
+ * Check if track is completed
+ */
+export const isTrackCompleted = (track: TrainingTrack): boolean => {
+  return track.completed_courses === track.total_courses;
+};
+
+/**
+ * Check if track is in progress
+ */
+export const isTrackInProgress = (track: TrainingTrack): boolean => {
+  return track.completed_courses > 0 && track.completed_courses < track.total_courses;
+};
+
+/**
+ * Check if track is overdue
+ */
+export const isTrackOverdue = (track: TrainingTrack): boolean => {
+  const dueDate = new Date(track.due_date + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today && !isTrackCompleted(track);
+};
+
+/**
+ * Get days until due date
+ */
+export const getDaysUntilDue = (dueDate: string): number => {
+  const due = new Date(dueDate + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffTime = due.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+/**
+ * Format due date as relative string
+ */
+export const formatDueDateRelative = (dueDate: string): string => {
+  const days = getDaysUntilDue(dueDate);
+  
+  if (days < 0) {
+    return `${Math.abs(days)} days overdue`;
+  } else if (days === 0) {
+    return 'Due today';
+  } else if (days === 1) {
+    return 'Due tomorrow';
+  } else if (days <= 7) {
+    return `Due in ${days} days`;
+  } else {
+    return new Date(dueDate + 'T00:00:00').toLocaleDateString();
+  }
+};
+
+/**
+ * Get status badge variant based on track status
+ */
+export const getStatusBadgeVariant = (
+  track: TrainingTrack
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  if (isTrackCompleted(track)) return 'default';
+  if (isTrackOverdue(track)) return 'destructive';
+  if (isTrackInProgress(track)) return 'secondary';
+  return 'outline';
 };

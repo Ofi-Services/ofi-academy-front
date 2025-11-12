@@ -28,7 +28,7 @@ import type {
 
 /**
  * Training Calendar Component with RTK Query
- * Updated for Training Tracks
+ * Updated for Training Tracks with Nullable Fields Support
  */
 const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
   userId,
@@ -274,7 +274,8 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                   : 0;
 
                 const hasOverdueTracks = dayData.summary?.tracks.some(isTrackOverdue) || false;
-                
+                const hasDueDateTracks = dayData.summary?.tracks?.some(track => !!track.due_date);
+
                 return (
                   <div
                     key={`${dayData.date}-${index}`}
@@ -283,7 +284,8 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                       !dayData.isCurrentMonth && "text-muted-foreground bg-muted/30",
                       dayData.isToday && "bg-primary/10 border-primary/30 font-semibold",
                       selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50",
-                      dayData.isWeekend && dayData.isCurrentMonth && "bg-accent/20"
+                      dayData.isWeekend && dayData.isCurrentMonth && "bg-accent/20",
+                      hasDueDateTracks && "bg-warning/20 border-warning/40 dark:bg-warning/15"
                     )}
                     onClick={() => handleDateClick(dayData)}
                   >

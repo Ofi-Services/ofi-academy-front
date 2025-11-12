@@ -18,10 +18,10 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
   // Selecciona el navigation según el rol del usuario
   let navigation
   switch (user.role) {
-    case "consultant":
+    case "Talent":
       navigation = CONSULTANT_NAV
       break
-    case "leader":
+    case "Leader":
       navigation = LEADER_NAV
       break
     case "superuser":

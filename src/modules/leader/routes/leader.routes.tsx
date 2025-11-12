@@ -1,89 +1,21 @@
+import { Route } from "react-router-dom";
+import RoleRoute from "@/core/routes/RoleRoute";
+import LeaderDashboard from "../pages/LeaderPage";
+import CoursesDashboard from "@/shared/components/common/CoursesDashboard";
+import TrainingCalendar from "@/shared/components/common/calendar/CalendarSummary";
 
-import { Route } from "react-router-dom"
-import ProtectedRoute from "@/core/routes/ProtectedRoute"
-import AuthenticatedLayout from "@/shared/components/common/AuthenticatedLayout"
+const role = ["Leader"];
 
-// Leader components
-import LeaderDashboard from "../pages/LeaderPage"
-import { Calendar } from "@/shared/components/ui/calendar"
+const leaderPages = [
+  { path: "/courses", element: <CoursesDashboard /> },
+  { path: "/leader/dashboard", element: <LeaderDashboard /> },
+  { path: "/leader/reports", element: <div>Leader Reports Page</div> },
+  { path: "/leader/plans", element: < TrainingCalendar /> },
+  { path: "/leader/certificates", element: <div>Leader Certificates Page</div> },
+  { path: "/leader/messages", element: <div>Leader Messages Page</div> },
+  { path: "/leader/resources", element: <div>Leader Resources Page</div> },
+];
 
-// Leader pages
-const LeaderReports = () => <div>Leader Reports Page</div>
-const LeaderPlans = () => <Calendar />
-const LeaderCertificates = () => <div>Leader Certificates Page</div>
-const LeaderMessages = () => <div>Leader Messages Page</div>
-const LeaderResources = () => <div>Leader Resources Page</div>
-
-/**
- * Leader Routes
- * All routes that leader users can access
- */
-export const leaderRoutes = (
-  <>
-    <Route
-      path="/leader/dashboard"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderDashboard />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/leader/reports"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderReports />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/leader/plans"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderPlans />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/leader/certificates"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderCertificates />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/leader/messages"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderMessages />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/leader/resources"
-      element={
-        <ProtectedRoute allowedRoles={["leader"]}>
-          <AuthenticatedLayout>
-            <LeaderResources />
-          </AuthenticatedLayout>
-        </ProtectedRoute>
-      }
-    />
-  </>
-)
+export const leaderRoutes = leaderPages.map(({ path, element }) => (
+  <Route key={path} path={path} element={<RoleRoute allowedRoles={role}>{element}</RoleRoute>} />
+));

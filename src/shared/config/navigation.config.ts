@@ -25,9 +25,9 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
-      { label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
-      { label: "Help & Support", icon: HelpCircle, path: "/support" },
-      { label: "Settings", icon: Settings, path: "/settings" },
+      //{ label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
+      //{ label: "Help & Support", icon: HelpCircle, path: "/support" },
+      //{ label: "Settings", icon: Settings, path: "/settings" },
     ],
   },
 ]
@@ -36,19 +36,19 @@ export const LEADER_NAV: NavSection[] = [
   {
     title: "Main Menu",
     items: [
-      { label: "My Progress", icon: BookOpen, path: "/dashboard", active: true },
+      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Team Overview", icon: Users2, path: "/leader/dashboard" },
-      { label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
-      { label: "Training Plans", icon: Target, path: "/leader/plans" },
-      { label: "Certificates", icon: Award, path: "/leader/certificates" },
+      //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
+      { label: "Calendar", icon: Target, path: "/leader/plans" },
+      //{ label: "Certificates", icon: Award, path: "/leader/certificates" },
     ],
   },
   {
     title: "Quick Links",
     items: [
-      { label: "Team Messages", icon: MessageSquare, path: "/leader/messages" },
-      { label: "Resources", icon: FileText, path: "/leader/resources" },
-      { label: "Settings", icon: Settings, path: "/settings" },
+      //{ label: "Team Messages", icon: MessageSquare, path: "/leader/messages" },
+      //{ label: "Resources", icon: FileText, path: "/leader/resources" },
+      //{ label: "Settings", icon: Settings, path: "/settings" },
     ],
   },
 ]

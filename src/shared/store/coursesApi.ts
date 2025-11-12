@@ -52,7 +52,7 @@ export interface Schedule {
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:8000/api',
+  baseUrl: 'https://ofiacademy.api.sofiatechnology.ai/api',
   prepareHeaders: (headers) => {
     const token = localStorage.getItem('ofi_token')
     

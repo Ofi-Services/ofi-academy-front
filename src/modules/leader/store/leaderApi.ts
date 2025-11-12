@@ -1,27 +1,17 @@
-
 import { baseApi } from "@/core/api/baseApi"
 
 // Types
 export interface TeamMember {
-  id: string
+  id: number
   name: string
   email: string
   role: string
-  progress: number
-  completedCourses: number
-  activeCourses: number
+  completion_percentage: number
+  completed_courses: number
+  overdue_courses: number
+  active_courses: number
   status: "excellent" | "on_track" | "at_risk"
   lastActivity: string
-  avatar?: string
-}
-
-export interface TeamProgress {
-  totalMembers: number
-  averageProgress: number
-  atRiskMembers: number
-  topPerformers: number
-  completedCourses: number
-  activeCourses: number
 }
 
 export interface TeamReport {
@@ -47,24 +37,59 @@ export interface Certificate {
   certificateUrl: string
 }
 
+export interface TrainingTrackCourse {
+  id: number
+  title: string
+  has_submission?: boolean
+  completed?: boolean
+  submission_link?: string
+}
+
+export interface TrainingTrack {
+  id: number
+  title: string
+  platform: string
+  due_date: string
+  category: string | null
+  total_courses: number
+  courses?: TrainingTrackCourse[]
+  progress_percentage: number
+  completed_courses: number
+  is_completed: boolean
+  completion_date: string | null
+  is_overdue: boolean
+}
+
+export interface TrainingTrackDetail {
+  training_track: {
+    id: number
+    title: string
+    platform: string
+    due_date: string
+    category: string | null
+    total_courses: number
+  }
+  courses: TrainingTrackCourse[]
+  assignment: {
+    progress_percentage: number
+    completed_courses: number
+    is_completed: boolean
+    completion_date: string | null
+  }
+}
+
 // Leader API endpoints
 export const leaderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Get team members
+    // Get all team members with comprehensive training statistics
     getTeamMembers: builder.query<TeamMember[], void>({
-      query: () => "/leader/team/members",
+      query: () => "/leader/talents/",
       providesTags: ["TeamMembers"],
     }),
     
-    // Get team progress overview
-    getTeamProgress: builder.query<TeamProgress, void>({
-      query: () => "/leader/team/progress",
-      providesTags: ["TeamProgress"],
-    }),
-    
     // Get specific team member details
-    getTeamMemberDetails: builder.query<TeamMember, string>({
-      query: (memberId) => `/leader/team/members/${memberId}`,
+    getTeamMemberDetails: builder.query<TeamMember, number>({
+      query: (memberId) => `/leader/talents/${memberId}/`,
       providesTags: ["TeamMembers"],
     }),
     
@@ -79,17 +104,31 @@ export const leaderApi = baseApi.injectEndpoints({
       providesTags: ["Certificates"],
     }),
     
+    // Get user training tracks
+    getUserTrainingTracks: builder.query<TrainingTrack[], number>({
+      query: (userId) => `/users/${userId}/training-tracks/`,
+    }),
+    
+    // Get specific training track detail
+    getTrainingTrackDetail: builder.query<
+      TrainingTrackDetail,
+      { userId: number; trackId: number }
+    >({
+      query: ({ userId, trackId }) => 
+        `/users/${userId}/training-tracks/${trackId}/`,
+    }),
+    
     // Assign course to team member
     assignCourse: builder.mutation<
       void,
-      { memberId: string; courseId: string }
+      { memberId: number; courseId: string }
     >({
       query: ({ memberId, courseId }) => ({
-        url: `/leader/team/members/${memberId}/assign-course`,
+        url: `/leader/talents/${memberId}/assign-course`,
         method: "POST",
         body: { courseId },
       }),
-      invalidatesTags: ["TeamMembers", "TeamProgress"],
+      invalidatesTags: ["TeamMembers"],
     }),
     
     // Send message to team
@@ -109,10 +148,11 @@ export const leaderApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useGetTeamMembersQuery,
-  useGetTeamProgressQuery,
   useGetTeamMemberDetailsQuery,
   useGetTeamReportsQuery,
   useGetTeamCertificatesQuery,
+  useGetUserTrainingTracksQuery,
+  useGetTrainingTrackDetailQuery,
   useAssignCourseMutation,
   useSendTeamMessageMutation,
 } = leaderApi

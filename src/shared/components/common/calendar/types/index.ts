@@ -1,5 +1,5 @@
 /**
- * Training Calendar Types - Updated for Training Tracks
+ * Training Calendar Types - Updated for Training Tracks with Nullable Fields
  */
 
 // ============================================================================
@@ -10,8 +10,10 @@ export interface TrainingTrack {
   id: number;
   title: string;
   platform: string;
-  category: string;
-  due_date: string; // ISO date string (YYYY-MM-DD)
+  link?: string | null;
+  category: string | null;
+  due_date: string | null; // ISO date string (YYYY-MM-DD)
+  completion_date?: string | null; // ISO date string (YYYY-MM-DD)
   total_courses: number;
   completed_courses: number;
 }

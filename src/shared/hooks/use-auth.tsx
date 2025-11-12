@@ -9,8 +9,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; // ← IMPORTAR
 import { baseApi } from "@/core/api/baseApi"; // ← IMPORTAR
 import { coursesApi } from "@/shared/store/coursesApi"; // ← IMPORTAR
+import { leaderApi } from "@/modules/leader/store/leaderApi";
 
-type UserRole = "consultant" | "leader" | "superuser";
+type UserRole = "Talent" | "Leader" | "superuser";
 
 interface User {
   id: string;
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:8000/api/auth/login/",
+        "https://ofiacademy.api.sofiatechnology.ai/api/auth/login/",
         {
           method: "POST",
           headers: {
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ? `${data.user.first_name} ${data.user.last_name}`.trim()
             : data.user.username,
         email: data.user.email || data.user.username,
-        role: "consultant",
+        role: data.user.role,
         avatar: "/default-avatar.png",
       };
 
@@ -85,9 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("ofi_user", JSON.stringify(userData));
       localStorage.setItem("ofi_token", data.access);
 
-      if (userData.role === "consultant") {
+      if (userData.role === "Talent") {
         navigate("/dashboard");
-      } else if (userData.role === "leader") {
+      } else if (userData.role === "Leader") {
         navigate("/leader/dashboard");
       } else if (userData.role === "superuser") {
         navigate("/superuser/dashboard");
@@ -107,9 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("ofi_user");
     localStorage.removeItem("ofi_token");
     
-    // Limpiar el caché de RTK Query de ambas APIs
     dispatch(baseApi.util.resetApiState());
     dispatch(coursesApi.util.resetApiState());
+    dispatch(leaderApi.util.resetApiState());
     
     navigate("/login");
   };

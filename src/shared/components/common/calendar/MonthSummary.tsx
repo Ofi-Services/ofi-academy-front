@@ -163,7 +163,7 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
                   {[...summary.categoriesBreakdown]
                     .sort((a, b) => b.totalTracks - a.totalTracks)
                     .slice(0, 3)
-                    .map((cat, idx) => (
+                    .map((cat) => (
                       <Badge key={cat.category} variant="outline" className="text-xs">
                         {getCategoryLabel(cat.category)} ({cat.totalTracks})
                       </Badge>

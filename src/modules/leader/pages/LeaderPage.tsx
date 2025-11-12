@@ -1,32 +1,53 @@
-
-import StatsCard from "@/shared/components/common/StatsCard"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Users2, TrendingUp, AlertTriangle, Award } from "lucide-react"
-import { Badge } from "@/shared/components/ui/badge"
-import { useGetTeamMembersQuery, useGetTeamProgressQuery } from "../store/leaderApi"
+import { useState, useMemo } from "react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import StatsCard from "@/shared/components/common/StatsCard"
+import { useGetTeamMembersQuery } from "../store/leaderApi"
+import TrainingTracksDialog from "../components/TrainingTracksDialog"
+import TeamMemberCard from "../components/TeamMemberCard"
 
 export default function LeaderDashboard() {
-  // RTK Query hooks
+  const [selectedMember, setSelectedMember] = useState<{ id: number; name: string } | null>(null)
+  
+  // RTK Query hook
   const { 
     data: teamMembers, 
     isLoading: membersLoading, 
     error: membersError 
   } = useGetTeamMembersQuery()
-  
-  const { 
-    data: teamProgress, 
-    isLoading: progressLoading, 
-    error: progressError 
-  } = useGetTeamProgressQuery()
+
+  // Calculate team statistics from team members data
+  const teamStats = useMemo(() => {
+    if (!teamMembers || teamMembers.length === 0) {
+      return {
+        totalMembers: 0,
+        averageProgress: 0,
+        atRiskMembers: 0,
+        topPerformers: 0
+      }
+    }
+
+    const totalMembers = teamMembers.length
+    const averageProgress = Math.round(
+      teamMembers.reduce((sum, member) => sum + member.completion_percentage, 0) / totalMembers
+    )
+    const atRiskMembers = teamMembers.filter(member => member.status === "at_risk").length
+    const topPerformers = teamMembers.filter(member => member.status === "excellent").length
+
+    return {
+      totalMembers,
+      averageProgress,
+      atRiskMembers,
+      topPerformers
+    }
+  }, [teamMembers])
 
   // Loading state
-  if (membersLoading || progressLoading) {
+  if (membersLoading) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Team Performance Overview</h1>
+        <h1 className="text-3xl font-bold">Team Overview</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
@@ -40,15 +61,15 @@ export default function LeaderDashboard() {
   }
 
   // Error state
-  if (membersError || progressError) {
+  if (membersError) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Team Performance Overview</h1>
+        <h1 className="text-3xl font-bold">Team Overview</h1>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Unable to load team data. Please try again later.
+            Failed to load team information. Please try again later.
           </AlertDescription>
         </Alert>
       </div>
@@ -57,83 +78,60 @@ export default function LeaderDashboard() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-8">Team Performance Overview</h1>
+      <h1 className="text-3xl font-bold mb-8">Team Overview</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatsCard
           label="Team Members"
-          value={teamProgress?.totalMembers || 0}
+          value={teamStats.totalMembers}
           icon={Users2}
           color="primary"
         />
         <StatsCard
           label="Average Progress"
-          value={`${teamProgress?.averageProgress || 0}%`}
+          value={`${teamStats.averageProgress}%`}
           icon={TrendingUp}
           color="success"
         />
         <StatsCard
           label="At Risk"
-          value={teamProgress?.atRiskMembers || 0}
+          value={teamStats.atRiskMembers}
           icon={AlertTriangle}
           color="warning"
         />
         <StatsCard
           label="Top Performers"
-          value={teamProgress?.topPerformers || 0}
+          value={teamStats.topPerformers}
           icon={Award}
           color="success"
         />
       </div>
 
-      {/* Team Members Table */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Team Members Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {teamMembers?.slice(0, 8).map((member) => {
-              let statusColor: "default" | "secondary" | "destructive" = "destructive"
-              let statusLabel = "At Risk"
-              
-              if (member.status === "excellent") {
-                statusColor = "default"
-                statusLabel = "Excellent"
-              } else if (member.status === "on_track") {
-                statusColor = "secondary"
-                statusLabel = "On Track"
-              }
+      {/* Team Members Cards */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold mb-4">Team Progress</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {teamMembers?.map((member) => (
+            <TeamMemberCard
+              key={member.id}
+              member={member}
+              onViewTracks={setSelectedMember}
+            />
+          ))}
+        </div>
+      </div>
 
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium">{member.name}</div>
-                    <div className="text-sm text-muted-foreground">{member.email}</div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold">{member.progress}%</div>
-                      <div className="text-sm text-muted-foreground">
-                        {member.completedCourses} courses completed
-                      </div>
-                    </div>
-                    
-                    <Badge variant={statusColor}>
-                      {statusLabel}
-                    </Badge>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Training Tracks Dialog */}
+      {selectedMember && (
+        <TrainingTracksDialog
+          userId={selectedMember.id}
+          userName={selectedMember.name}
+          open={!!selectedMember}
+          onOpenChange={(open) => !open && setSelectedMember(null)}
+        />
+      )}
     </>
   )
 }

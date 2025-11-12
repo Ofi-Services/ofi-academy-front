@@ -2,7 +2,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
 // Base URL - en producción apuntaría a tu API real
-const BASE_URL = "/api"
+const BASE_URL = "https://ofiacademy.api.sofiatechnology.ai/api"
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({

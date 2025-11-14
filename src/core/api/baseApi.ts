@@ -7,7 +7,7 @@ const BASE_URL = "https://ofiacademy.api.sofiatechnology.ai/api"
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
-  prepareHeaders: (headers, { getState }) => {
+  prepareHeaders: (headers) => {
     // Get token from localStorage or Redux state
     const token = localStorage.getItem("ofi_token")
     

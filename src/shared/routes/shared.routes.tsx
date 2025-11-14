@@ -16,7 +16,7 @@ const Settings = () => <WorkInProgress />
 export const sharedRoutes = (
   <>
     <Route
-      path="/dashboard"
+      path="/courses"
       element={
         <ProtectedRoute>
           <AuthenticatedLayout>

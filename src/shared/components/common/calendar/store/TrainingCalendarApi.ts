@@ -40,13 +40,16 @@ const transformTracksToMonthSummary = (
   // Note: month parameter is 0-11 (JavaScript format)
   // but track.due_date is ISO format (YYYY-MM-DD) which JavaScript parses correctly
   const monthTracks = tracks.filter((track) => {
+    if (!track.due_date) return false;
     const trackDate = new Date(track.due_date);
     return trackDate.getFullYear() === year && trackDate.getMonth() === month;
   });
 
   // Process each track
   monthTracks.forEach((track) => {
-    const date = track.due_date;
+    const date = track.due_date as string;
+    const categoryKey = track.category ?? 'Uncategorized';
+    const platformKey = track.platform ?? 'Unknown';
     const isCompleted = track.completed_courses === track.total_courses;
     const isInProgress = track.completed_courses > 0 && track.completed_courses < track.total_courses;
 
@@ -79,45 +82,49 @@ const transformTracksToMonthSummary = (
     if (isInProgress) daySummary.inProgressTracks++;
     daySummary.totalCourses += track.total_courses;
     daySummary.completedCourses += track.completed_courses;
-    daySummary.tracksByCategory[track.category] = (daySummary.tracksByCategory[track.category] || 0) + 1;
-    daySummary.tracksByPlatform[track.platform] = (daySummary.tracksByPlatform[track.platform] || 0) + 1;
+    daySummary.tracksByCategory[categoryKey] = (daySummary.tracksByCategory[categoryKey] || 0) + 1;
+    daySummary.tracksByPlatform[platformKey] = (daySummary.tracksByPlatform[platformKey] || 0) + 1;
     daySummary.tracks.push(track);
 
     // Update category stats
-    if (!categoryStats[track.category]) {
-      categoryStats[track.category] = {
-        category: track.category,
+    if (!categoryStats[categoryKey]) {
+      categoryStats[categoryKey] = {
+        category: categoryKey,
         totalTracks: 0,
         completedTracks: 0,
         totalCourses: 0,
         completedCourses: 0,
       };
     }
-    categoryStats[track.category].totalTracks++;
-    if (isCompleted) categoryStats[track.category].completedTracks++;
-    categoryStats[track.category].totalCourses += track.total_courses;
-    categoryStats[track.category].completedCourses += track.completed_courses;
+    categoryStats[categoryKey].totalTracks++;
+    if (isCompleted) categoryStats[categoryKey].completedTracks++;
+    categoryStats[categoryKey].totalCourses += track.total_courses;
+    categoryStats[categoryKey].completedCourses += track.completed_courses;
 
     // Update platform stats
-    if (!platformStats[track.platform]) {
-      platformStats[track.platform] = {
-        platform: track.platform,
+    if (!platformStats[platformKey]) {
+      platformStats[platformKey] = {
+        platform: platformKey,
         totalTracks: 0,
         completedTracks: 0,
         totalCourses: 0,
         completedCourses: 0,
       };
     }
-    platformStats[track.platform].totalTracks++;
-    if (isCompleted) platformStats[track.platform].completedTracks++;
-    platformStats[track.platform].totalCourses += track.total_courses;
-    platformStats[track.platform].completedCourses += track.completed_courses;
+    platformStats[platformKey].totalTracks++;
+    if (isCompleted) platformStats[platformKey].completedTracks++;
+    platformStats[platformKey].totalCourses += track.total_courses;
+    platformStats[platformKey].completedCourses += track.completed_courses;
   });
 
   // Get upcoming deadlines (sorted by due date)
   const upcomingDeadlines = monthTracks
     .filter((track) => track.completed_courses < track.total_courses)
-    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .sort((a, b) => {
+      const dateA = a.due_date ? new Date(a.due_date).getTime() : 0;
+      const dateB = b.due_date ? new Date(b.due_date).getTime() : 0;
+      return dateA - dateB;
+    })
     .slice(0, 10);
 
   return {
@@ -186,14 +193,14 @@ export const trainingCalendarApi = createApi({
           url: `/calendar/?${params.toString()}`,
         };
       },
-      transformResponse: (response: TrainingTrack[], meta, arg) => {
+      transformResponse: (response: TrainingTrack[], _meta, arg) => {
         const currentDate = new Date();
         const year = arg.year ?? currentDate.getFullYear();
         const month = arg.month ?? currentDate.getMonth();
 
         return transformTracksToMonthSummary(response, year, month);
       },
-      providesTags: (result, error, { year, month }) => [
+      providesTags: (_result, _error, { year, month }) => [
         { type: 'Calendar', id: `${year}-${month}` },
         'TrainingTrack',
       ],

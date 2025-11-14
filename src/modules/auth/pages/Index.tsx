@@ -26,13 +26,13 @@ export default function LoginPage() {
   }
 
   const fillLeader = () => {
-    setEmail("d.mendoza@ofiservices.com")
-    setPassword("Testtest123!")
+    setEmail("a.cordoba@ofiservices.com")
+    setPassword("604216018")
   }
 
   const fillConsultant = () => {
-    setEmail("test1@email.com")
-    setPassword("TestTest123!")
+    setEmail("m.rozo@ofiservices.com")
+    setPassword("257758741")
   }
 
   return (
@@ -116,9 +116,9 @@ export default function LoginPage() {
                 onClick={fillLeader}
                 className="w-full text-left p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
               >
-                <p className="text-sm font-medium text-foreground">Leader</p>
+                <p className="text-sm font-medium text-foreground">HR</p>
                 <p className="text-xs text-muted-foreground">
-                  d.mendoza@ofiservices.com
+                  a.cordoba@ofiservices.co
                 </p>
               </button>
               <button
@@ -128,7 +128,7 @@ export default function LoginPage() {
               >
                 <p className="text-sm font-medium text-foreground">Consultant</p>
                 <p className="text-xs text-muted-foreground">
-                  test1@email.com / Consultant
+                  m.rozo@ofiservices.com
                 </p>
               </button>
             </div>

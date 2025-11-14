@@ -107,7 +107,7 @@ export const coursesApi = createApi({
     // Get course details with modules
     getCourseDetails: builder.query<TrainingTrack, string>({
       query: (courseId) => `/training-tracks/${courseId}/`,
-      providesTags: (result, error, courseId) => [{ type: 'Courses', id: courseId }],
+      providesTags: (_result, _error, courseId) => [{ type: 'Courses', id: courseId }],
     }),
 
     // Get user progress
@@ -142,7 +142,7 @@ export const coursesApi = createApi({
           body: formData,
         }
       },
-      invalidatesTags: (result, error, formData) => {
+      invalidatesTags: (_result, _arg, formData) => {
         const trackId = formData.get('trackId') as string
         return [
           { type: 'Courses', id: trackId },

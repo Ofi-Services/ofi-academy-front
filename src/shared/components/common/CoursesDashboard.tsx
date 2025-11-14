@@ -1,19 +1,22 @@
 import { useState, useMemo } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
-import { BookOpen, Award, TrendingUp, Search } from "lucide-react"
+import { BookOpen, Award, TrendingUp, Search, ArrowUpDown } from "lucide-react"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
-import { useAuth } from "@/shared/hooks/use-auth"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { Input } from "@/shared/components/ui/Input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
+import { Button } from "@/shared/components/ui/button"
+
+const ITEMS_PER_PAGE = 9
 
 export default function CoursesDashboard() {
-  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [currentPage, setCurrentPage] = useState(1)
   
   // RTK Query hooks
   const { 
@@ -22,13 +25,6 @@ export default function CoursesDashboard() {
     error: coursesError 
   } = useGetEnrolledCoursesQuery()
   
-  // Commented out: Remote progress query
-  // const { 
-  //   data: progress, 
-  //   isLoading: progressLoading, 
-  //   error: progressError 
-  // } = useGetUserProgressQuery(user?.id || "")
-
   // Calculate progress locally from courses data
   const progress = useMemo(() => {
     if (!courses) return null
@@ -58,11 +54,11 @@ export default function CoursesDashboard() {
     return Array.from(uniqueCategories).sort()
   }, [courses])
 
-  // Filter courses
-  const filteredCourses = useMemo(() => {
+  // Filter and sort courses
+  const filteredAndSortedCourses = useMemo(() => {
     if (!courses) return []
     
-    return courses.filter(course => {
+    const filtered = courses.filter(course => {
       // Filter by search term
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            course.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -72,9 +68,41 @@ export default function CoursesDashboard() {
       
       return matchesSearch && matchesCategory
     })
-  }, [courses, searchTerm, selectedCategory])
 
-  // Loading state (only courses now)
+    // Sort alphabetically by title
+    filtered.sort((a, b) => {
+      const titleA = a.title.toLowerCase()
+      const titleB = b.title.toLowerCase()
+      
+      if (sortOrder === "asc") {
+        return titleA.localeCompare(titleB)
+      } else {
+        return titleB.localeCompare(titleA)
+      }
+    })
+
+    return filtered
+  }, [courses, searchTerm, selectedCategory, sortOrder])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedCourses.length / ITEMS_PER_PAGE)
+  const paginatedCourses = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return filteredAndSortedCourses.slice(startIndex, endIndex)
+  }, [filteredAndSortedCourses, currentPage])
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory, sortOrder])
+
+  // Toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === "asc" ? "desc" : "asc")
+  }
+
+  // Loading state
   if (coursesLoading) {
     return (
       <div className="space-y-8">
@@ -103,7 +131,7 @@ export default function CoursesDashboard() {
     )
   }
 
-  // Error state (only courses now)
+  // Error state
   if (coursesError) {
     return (
       <div className="space-y-8">
@@ -173,15 +201,25 @@ export default function CoursesDashboard() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Sort Button */}
+        <Button
+          variant="outline"
+          onClick={toggleSortOrder}
+          className="w-full sm:w-auto"
+        >
+          <ArrowUpDown className="w-4 h-4 mr-2" />
+          {sortOrder === "asc" ? "A-Z" : "Z-A"}
+        </Button>
       </div>
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {filteredCourses.length} of {courses?.length || 0} courses
+        Showing {paginatedCourses.length} of {filteredAndSortedCourses.length} courses
       </div>
 
       {/* Course Cards */}
-      {filteredCourses.length === 0 ? (
+      {filteredAndSortedCourses.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No courses found</AlertTitle>
@@ -190,23 +228,59 @@ export default function CoursesDashboard() {
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              courseId={course.id}
-              title={course.title}
-              description={course.description}
-              progress={course.progress_percentage || 0}
-              completedLessons={course.completed_courses || 0}
-              totalLessons={course.total_courses || 0}
-              platform={course.platform}
-              category={course.category}
-              duration={course.duration}
-              dueDate={course.due_date ? new Date(course.due_date) : null}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedCourses.map((course) => (
+              <CourseCard
+                key={course.id}
+                courseId={course.id}
+                title={course.title}
+                description={course.description}
+                progress={course.progress_percentage || 0}
+                completedLessons={course.completed_courses || 0}
+                totalLessons={course.total_courses || 0}
+                platform={course.platform}
+                category={course.category}
+                duration={course.duration}
+                dueDate={course.due_date ? new Date(course.due_date) : null}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    onClick={() => setCurrentPage(page)}
+                    className="min-w-10 px-3"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -11,7 +11,7 @@ import { baseApi } from "@/core/api/baseApi"; // ← IMPORTAR
 import { coursesApi } from "@/shared/store/coursesApi"; // ← IMPORTAR
 import { leaderApi } from "@/modules/leader/store/leaderApi";
 
-type UserRole = "Talent" | "Leader" | "superuser";
+type UserRole = "Talent" | "Leader" | "HR";
 
 interface User {
   id: string;
@@ -87,11 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("ofi_token", data.access);
 
       if (userData.role === "Talent") {
-        navigate("/dashboard");
+        navigate("/courses");
       } else if (userData.role === "Leader") {
         navigate("/leader/dashboard");
-      } else if (userData.role === "superuser") {
-        navigate("/superuser/dashboard");
+      } else if (userData.role === "HR") {
+        navigate("/hr/dashboard");
       }
 
       return true;

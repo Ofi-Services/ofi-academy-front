@@ -1,13 +1,11 @@
 import { Route } from "react-router-dom";
 import RoleRoute from "@/core/routes/RoleRoute";
 import LeaderDashboard from "../pages/LeaderPage";
-import CoursesDashboard from "@/shared/components/common/CoursesDashboard";
 import TrainingCalendar from "@/shared/components/common/calendar/CalendarSummary";
 
 const role = ["Leader"];
 
 const leaderPages = [
-  { path: "/courses", element: <CoursesDashboard /> },
   { path: "/leader/dashboard", element: <LeaderDashboard /> },
   { path: "/leader/reports", element: <div>Leader Reports Page</div> },
   { path: "/leader/plans", element: < TrainingCalendar /> },

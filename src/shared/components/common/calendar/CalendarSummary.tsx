@@ -14,7 +14,6 @@ import { MONTH_NAMES, DAY_NAMES, CALENDAR_GRID_SIZE } from './constants';
 import { MonthSummary } from './MonthSummary';
 import { 
   getCategoryIcon, 
-  getDominantCategory, 
   getDateString, 
   isWeekend,
   calculateCompletionRate,
@@ -32,7 +31,7 @@ import type {
  */
 const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
   userId,
-  onTrackClick,
+  //onTrackClick,
   onDateClick
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -265,9 +264,6 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
 
               {/* Calendar days */}
               {calendarDays.map((dayData, index) => {
-                const dominantCategory = dayData.summary 
-                  ? getDominantCategory(dayData.summary.tracksByCategory)
-                  : null;
                 
                 const completionRate = dayData.summary
                   ? calculateCompletionRate(dayData.summary.completedTracks, dayData.summary.totalTracks)

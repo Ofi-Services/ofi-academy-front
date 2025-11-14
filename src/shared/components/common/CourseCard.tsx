@@ -175,7 +175,7 @@ export default function CourseCard({
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             size="lg"
           >
-            Continue Course
+            Continue Training Track
           </Button>
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-import { BookOpen, Calendar, HelpCircle, Settings, MessageSquare, Users2, BarChart3, FileText, Target, Award } from "lucide-react"
+import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -17,7 +17,7 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Main Menu",
     items: [
-      { label: "My Progress", icon: BookOpen, path: "/dashboard", active: true },
+      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Schedule", icon: Calendar, path: "/schedule" },
       //{ label: "Course Resources", icon: BookOpen, path: "/resources" },
     ],
@@ -53,14 +53,15 @@ export const LEADER_NAV: NavSection[] = [
   },
 ]
 
-export const SUPERUSER_NAV: NavSection[] = [
+export const HR_NAV: NavSection[] = [
   {
-    title: "Administration",
+    title: "HR",
     items: [
-      { label: "Dashboard", icon: BarChart3, path: "/superuser/dashboard", active: true },
-      { label: "User Management", icon: Users2, path: "/superuser/users" },
-      { label: "Course Management", icon: BookOpen, path: "/superuser/courses" },
-      { label: "Reports & Analytics", icon: FileText, path: "/superuser/reports" },
+      { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
+      { label: "Team Overview", icon: Users2, path: "/hr/dashboard" },
+      //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
+      { label: "Calendar", icon: Target, path: "/hr/plans" },
+      //{ label: "Certificates", icon: Award, path: "/leader/certificates" },
     ],
   },
   {

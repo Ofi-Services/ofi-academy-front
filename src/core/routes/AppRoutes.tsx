@@ -7,6 +7,7 @@ import { consultantRoutes } from "@/modules/consultant/routes/consultant.routes"
 import { leaderRoutes } from "@/modules/leader/routes/leader.routes"
 //import { superuserRoutes } from "@/modules/superuser/routes/superuser.routes"
 import { sharedRoutes } from "@/shared/routes/shared.routes"
+import { hrRoutes } from "@/modules/hr/routes/hr.routes"
 
 /**
  * Main Application Routes
@@ -31,7 +32,7 @@ export default function AppRoutes() {
       {leaderRoutes}
 
       {/* Superuser module routes */}
-      {/*superuserRoutes*/}
+      {hrRoutes}
 
       {/* Shared routes (all authenticated users) */}
       {sharedRoutes}

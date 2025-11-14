@@ -1,4 +1,4 @@
-import { Construction, Wrench, Rocket, ArrowLeft } from "lucide-react"
+import { Construction, ArrowLeft } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { useNavigate } from "react-router-dom"

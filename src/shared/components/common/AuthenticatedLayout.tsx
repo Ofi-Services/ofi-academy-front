@@ -2,7 +2,7 @@
 import { ReactNode } from "react"
 import { useAuth } from "@/shared/hooks/use-auth"
 import DashboardLayout from "./DashboardLayout"
-import { CONSULTANT_NAV, LEADER_NAV, SUPERUSER_NAV } from "@/shared/config/navigation.config"
+import { CONSULTANT_NAV, LEADER_NAV, HR_NAV } from "@/shared/config/navigation.config"
 
 interface AuthenticatedLayoutProps {
   children: ReactNode
@@ -24,8 +24,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     case "Leader":
       navigation = LEADER_NAV
       break
-    case "superuser":
-      navigation = SUPERUSER_NAV
+    case "HR":
+      navigation = HR_NAV
       break
     default:
       navigation = CONSULTANT_NAV

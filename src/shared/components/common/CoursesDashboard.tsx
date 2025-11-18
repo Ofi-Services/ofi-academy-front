@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
-import { BookOpen, Award, TrendingUp, Search, ArrowUpDown } from "lucide-react"
+import { BookOpen, Award, TrendingUp, Search, ArrowUpDown, Monitor } from "lucide-react"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
@@ -15,6 +15,7 @@ const ITEMS_PER_PAGE = 9
 export default function CoursesDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [currentPage, setCurrentPage] = useState(1)
   
@@ -54,6 +55,13 @@ export default function CoursesDashboard() {
     return Array.from(uniqueCategories).sort()
   }, [courses])
 
+  // Extract unique platforms
+  const platforms = useMemo(() => {
+    if (!courses) return []
+    const uniquePlatforms = new Set(courses.map(course => course.platform).filter((platform): platform is string => platform !== undefined))
+    return Array.from(uniquePlatforms).sort()
+  }, [courses])
+
   // Filter and sort courses
   const filteredAndSortedCourses = useMemo(() => {
     if (!courses) return []
@@ -66,7 +74,10 @@ export default function CoursesDashboard() {
       // Filter by category
       const matchesCategory = selectedCategory === "all" || course.category === selectedCategory
       
-      return matchesSearch && matchesCategory
+      // Filter by platform
+      const matchesPlatform = selectedPlatform === "all" || course.platform === selectedPlatform
+      
+      return matchesSearch && matchesCategory && matchesPlatform
     })
 
     // Sort alphabetically by title
@@ -82,7 +93,7 @@ export default function CoursesDashboard() {
     })
 
     return filtered
-  }, [courses, searchTerm, selectedCategory, sortOrder])
+  }, [courses, searchTerm, selectedCategory, selectedPlatform, sortOrder])
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedCourses.length / ITEMS_PER_PAGE)
@@ -95,7 +106,7 @@ export default function CoursesDashboard() {
   // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1)
-  }, [searchTerm, selectedCategory, sortOrder])
+  }, [searchTerm, selectedCategory, selectedPlatform, sortOrder])
 
   // Toggle sort order
   const toggleSortOrder = () => {
@@ -174,8 +185,8 @@ export default function CoursesDashboard() {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search Input */}
+      <div className="flex flex-col gap-4">
+        {/* First Row: Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -187,30 +198,51 @@ export default function CoursesDashboard() {
           />
         </div>
 
-        {/* Category Filter */}
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Second Row: Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Category Filter */}
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full sm:w-52">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Sort Button */}
-        <Button
-          variant="outline"
-          onClick={toggleSortOrder}
-          className="w-full sm:w-auto"
-        >
-          <ArrowUpDown className="w-4 h-4 mr-2" />
-          {sortOrder === "asc" ? "A-Z" : "Z-A"}
-        </Button>
+          {/* Platform Filter */}
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-full sm:w-52">
+              <div className="flex items-center gap-2">
+                <Monitor className="w-4 h-4" />
+                <SelectValue placeholder="All Platforms" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Platforms</SelectItem>
+              {platforms.map((platform) => (
+                <SelectItem key={platform} value={platform}>
+                  {platform}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sort Button */}
+          <Button
+            variant="outline"
+            onClick={toggleSortOrder}
+            className="w-full sm:w-auto"
+          >
+            <ArrowUpDown className="w-4 h-4 mr-2" />
+            {sortOrder === "asc" ? "A-Z" : "Z-A"}
+          </Button>
+        </div>
       </div>
 
       {/* Results Count */}

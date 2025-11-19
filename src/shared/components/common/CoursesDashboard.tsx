@@ -1,24 +1,16 @@
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
-import { BookOpen, Award, TrendingUp, Search, ArrowUpDown, Monitor } from "lucide-react"
+import { BookOpen, Award, TrendingUp, Monitor } from "lucide-react"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { Input } from "@/shared/components/ui/Input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
 import { Button } from "@/shared/components/ui/button"
-
-const ITEMS_PER_PAGE = 9
+import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
+import { useDataFilter } from "@/shared/hooks/useDataFilter"
 
 export default function CoursesDashboard() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("all")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [currentPage, setCurrentPage] = useState(1)
-  
   // RTK Query hooks
   const { 
     data: courses, 
@@ -26,6 +18,26 @@ export default function CoursesDashboard() {
     error: coursesError 
   } = useGetEnrolledCoursesQuery()
   
+  // Data filtering hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    updateFilter,
+    sortOrder,
+    toggleSortOrder,
+    currentPage,
+    setCurrentPage,
+    filteredAndSortedData,
+    paginatedData,
+    totalPages
+  } = useDataFilter({
+    data: courses || [],
+    searchFields: ["title", "description"],
+    sortField: "title",
+    itemsPerPage: 9
+  })
+
   // Calculate progress locally from courses data
   const progress = useMemo(() => {
     if (!courses) return null
@@ -62,56 +74,22 @@ export default function CoursesDashboard() {
     return Array.from(uniquePlatforms).sort()
   }, [courses])
 
-  // Filter and sort courses
-  const filteredAndSortedCourses = useMemo(() => {
-    if (!courses) return []
-    
-    const filtered = courses.filter(course => {
-      // Filter by search term
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      // Filter by category
-      const matchesCategory = selectedCategory === "all" || course.category === selectedCategory
-      
-      // Filter by platform
-      const matchesPlatform = selectedPlatform === "all" || course.platform === selectedPlatform
-      
-      return matchesSearch && matchesCategory && matchesPlatform
-    })
-
-    // Sort alphabetically by title
-    filtered.sort((a, b) => {
-      const titleA = a.title.toLowerCase()
-      const titleB = b.title.toLowerCase()
-      
-      if (sortOrder === "asc") {
-        return titleA.localeCompare(titleB)
-      } else {
-        return titleB.localeCompare(titleA)
-      }
-    })
-
-    return filtered
-  }, [courses, searchTerm, selectedCategory, selectedPlatform, sortOrder])
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedCourses.length / ITEMS_PER_PAGE)
-  const paginatedCourses = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-    const endIndex = startIndex + ITEMS_PER_PAGE
-    return filteredAndSortedCourses.slice(startIndex, endIndex)
-  }, [filteredAndSortedCourses, currentPage])
-
-  // Reset to page 1 when filters change
-  useMemo(() => {
-    setCurrentPage(1)
-  }, [searchTerm, selectedCategory, selectedPlatform, sortOrder])
-
-  // Toggle sort order
-  const toggleSortOrder = () => {
-    setSortOrder(prev => prev === "asc" ? "desc" : "asc")
-  }
+  // Filter configuration
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: "category",
+      label: "Category",
+      placeholder: "All Categories",
+      options: categories.map(category => ({ value: category, label: category }))
+    },
+    {
+      key: "platform",
+      label: "Platform",
+      placeholder: "All Platforms",
+      icon: Monitor,
+      options: platforms.map(platform => ({ value: platform, label: platform }))
+    }
+  ]
 
   // Loading state
   if (coursesLoading) {
@@ -184,74 +162,25 @@ export default function CoursesDashboard() {
         />
       </div>
 
-      {/* Search and Filter Section */}
-      <div className="flex flex-col gap-4">
-        {/* First Row: Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="Search courses..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Second Row: Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Category Filter */}
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-52">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Platform Filter */}
-          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-            <SelectTrigger className="w-full sm:w-52">
-              <div className="flex items-center gap-2">
-                <Monitor className="w-4 h-4" />
-                <SelectValue placeholder="All Platforms" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
-              {platforms.map((platform) => (
-                <SelectItem key={platform} value={platform}>
-                  {platform}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Sort Button */}
-          <Button
-            variant="outline"
-            onClick={toggleSortOrder}
-            className="w-full sm:w-auto"
-          >
-            <ArrowUpDown className="w-4 h-4 mr-2" />
-            {sortOrder === "asc" ? "A-Z" : "Z-A"}
-          </Button>
-        </div>
-      </div>
+      {/* Filters */}
+      <FilterControls
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search courses..."
+        filters={filterConfigs}
+        filterValues={filters}
+        onFilterChange={updateFilter}
+        sortOrder={sortOrder}
+        onSortToggle={toggleSortOrder}
+      />
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {paginatedCourses.length} of {filteredAndSortedCourses.length} courses
+        Showing {paginatedData.length} of {filteredAndSortedData.length} courses
       </div>
 
       {/* Course Cards */}
-      {filteredAndSortedCourses.length === 0 ? (
+      {filteredAndSortedData.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No courses found</AlertTitle>
@@ -262,7 +191,7 @@ export default function CoursesDashboard() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedCourses.map((course) => (
+            {paginatedData.map((course) => (
               <CourseCard
                 key={course.id}
                 courseId={course.id}

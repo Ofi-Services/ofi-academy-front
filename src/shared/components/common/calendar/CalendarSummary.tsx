@@ -28,6 +28,7 @@ import type {
 /**
  * Training Calendar Component with RTK Query
  * Updated for Training Tracks with Nullable Fields Support
+ * Protected against string overflow
  */
 const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
   userId,
@@ -161,8 +162,8 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Calendar Header */}
-      <div className="flex-shrink-0 flex items-center justify-between mb-6 px-6 pt-6">
-        <div className="flex items-center gap-4">
+      <div className="flex-shrink-0 flex items-center justify-between mb-6 px-6 pt-6 gap-4 min-w-0">
+        <div className="flex items-center gap-4 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -173,7 +174,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
             <ChevronLeft className="w-4 h-4" />
           </Button>
 
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground whitespace-nowrap">
             {MONTH_NAMES[currentMonth]} {currentYear}
           </h1>
 
@@ -188,13 +189,13 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
           </Button>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 min-w-0 flex-1 justify-end overflow-hidden">
           <Button
             variant="outline"
             size="sm"
             onClick={goToToday}
             disabled={isLoading}
-            className="glass-card"
+            className="glass-card flex-shrink-0"
           >
             Today
           </Button>
@@ -204,7 +205,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
             size="sm"
             onClick={() => refetch()}
             disabled={isLoading}
-            className="glass-card"
+            className="glass-card flex-shrink-0"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -214,16 +215,24 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
           </Button>
 
           {monthSummary && !error && (
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground overflow-hidden flex-shrink min-w-0">
               {topCategories.map(cat => (
-                <div key={cat.category} className="flex items-center gap-1">
-                  {getCategoryIcon(cat.category, 'w-3 h-3')}
-                  <span>{cat.category} ({cat.totalTracks})</span>
+                <div 
+                  key={cat.category} 
+                  className="flex items-center gap-1 flex-shrink-0 min-w-0"
+                  title={`${cat.category}: ${cat.totalTracks} tracks`}
+                >
+                  {getCategoryIcon(cat.category, 'w-3 h-3 flex-shrink-0')}
+                  <span className="truncate max-w-[120px]">
+                    {cat.category} ({cat.totalTracks})
+                  </span>
                 </div>
               ))}
-              <div className="flex items-center gap-1">
-                <CalendarIcon className="w-3 h-3 text-primary" />
-                <span className="font-medium">Total ({monthSummary.totalTracks})</span>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <CalendarIcon className="w-3 h-3 text-primary flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">
+                  Total ({monthSummary.totalTracks})
+                </span>
               </div>
             </div>
           )}
@@ -232,18 +241,18 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="px-6 mb-4">
+        <div className="px-6 mb-4 flex-shrink-0">
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{errorMessage}</AlertDescription>
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <AlertDescription className="break-words">{errorMessage}</AlertDescription>
           </Alert>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex gap-6 overflow-hidden px-6 pb-6">
+      <div className="flex-1 flex gap-6 overflow-hidden px-6 pb-6 min-h-0">
         {/* Main Calendar */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex-1 relative overflow-hidden">
             {isLoading && (
               <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-10">
@@ -271,31 +280,37 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
 
                 const hasOverdueTracks = dayData.summary?.tracks.some(isTrackOverdue) || false;
                 const hasDueDateTracks = dayData.summary?.tracks?.some(track => !!track.due_date);
+                const hasTracks = dayData.summary && dayData.summary.totalTracks > 0;
 
                 return (
                   <div
                     key={`${dayData.date}-${index}`}
                     className={cn(
                       "p-2 border border-border/50 cursor-pointer hover:bg-accent/50 transition-colors min-h-[80px] relative overflow-hidden",
-                      !dayData.isCurrentMonth && "text-muted-foreground bg-muted/30",
-                      dayData.isToday && "bg-primary/10 border-primary/30 font-semibold",
-                      selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50",
-                      dayData.isWeekend && dayData.isCurrentMonth && "bg-accent/20",
-                      hasDueDateTracks && "bg-warning/20 border-warning/40 dark:bg-warning/15"
+                      !dayData.isCurrentMonth && "text-muted-foreground bg-border/40",
+                      // Días con tracks en color verde suave
+                      dayData.isCurrentMonth && hasTracks && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
+                      dayData.isWeekend && dayData.isCurrentMonth && !hasTracks && "bg-accent/20",
+                      // Días con due dates en amarillo (sobrescribe verde)
+                      hasDueDateTracks && "bg-secondary/10 border-warning/40 dark:bg-warning/15",
+                      // Today destaca más (sobrescribe otros)
+                      dayData.isToday && "bg-primary/10 border-primary/30 font-semibold ring-1 ring-primary/30",
+                      // Seleccionado destaca más aún
+                      selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50"
                     )}
                     onClick={() => handleDateClick(dayData)}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-2 gap-1 min-w-0">
                       <span className={cn(
-                        "text-sm font-medium",
+                        "text-sm font-medium flex-shrink-0",
                         dayData.isToday && "text-primary font-bold"
                       )}>
                         {dayData.day}
                       </span>
                       {dayData.summary && dayData.summary.totalTracks > 0 && (
                         <Badge 
-                          variant={hasOverdueTracks ? "destructive" : "secondary"} 
-                          className="text-xs h-5"
+                          variant={hasOverdueTracks ? "destructive" : "outline"} 
+                          className="text-xs h-5 flex-shrink-0"
                         >
                           {dayData.summary.totalTracks}
                         </Badge>
@@ -304,22 +319,27 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
 
                     {/* Category indicators */}
                     {dayData.isCurrentMonth && dayData.summary && (
-                      <div className="space-y-1">
+                      <div className="space-y-1 overflow-hidden">
                         {Object.entries(dayData.summary.tracksByCategory)
                           .slice(0, 2)
                           .map(([category, count]) => (
-                            <div key={category} className="flex items-center gap-1 text-xs">
-                              {getCategoryIcon(category, 'w-3 h-3')}
-                              <span className="truncate text-muted-foreground">{count}</span>
+                            <div 
+                              key={category} 
+                              className="flex items-center gap-1 text-xs min-w-0"
+                              title={`${category}: ${count} tracks`}
+                            >
+                              {getCategoryIcon(category, 'w-3 h-3 flex-shrink-0')}
+                              <span className="truncate text-muted-foreground">{category}</span>
+                              <span className="text-muted-foreground flex-shrink-0">({count})</span>
                             </div>
                           ))}
                         {dayData.summary.completedTracks > 0 && (
-                          <div className="text-xs text-green-600 font-medium">
+                          <div className="text-xs text-green-600 font-medium whitespace-nowrap">
                             ✓ {dayData.summary.completedTracks}
                           </div>
                         )}
                         {completionRate > 0 && completionRate < 100 && (
-                          <div className="text-xs text-blue-600 font-medium">
+                          <div className="text-xs text-blue-600 font-medium whitespace-nowrap">
                             {completionRate}%
                           </div>
                         )}
@@ -333,17 +353,17 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
         </div>
 
         {/* Summary Sidebar */}
-        <div className="w-96 border-l border-border pl-6 flex flex-col overflow-hidden">
-          <div className="flex-shrink-0 mb-4">
-            <h2 className="text-lg font-semibold text-foreground">
+        <div className="w-96 border-l border-border pl-6 flex flex-col overflow-hidden flex-shrink-0">
+          <div className="flex-shrink-0 mb-4 overflow-hidden">
+            <h2 className="text-lg font-semibold text-foreground truncate">
               Monthly Overview
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground truncate">
               Training statistics for {MONTH_NAMES[currentMonth]}
             </p>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             {monthSummary ? (
               <MonthSummary 
                 summary={monthSummary} 

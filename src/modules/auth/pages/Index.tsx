@@ -67,7 +67,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-12 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
           </form>
 
           {/* Demo credentials */}
-          <div className="mt-8 p-6 bg-muted rounded-2xl border border-border">
+          <div className="mt-8 p-6 bg-accent rounded-2xl border border-border">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="h-5 w-5 text-primary" />
               <p className="text-sm font-semibold text-foreground">
@@ -114,7 +114,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={fillLeader}
-                className="w-full text-left p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
+                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
               >
                 <p className="text-sm font-medium text-foreground">HR</p>
                 <p className="text-xs text-muted-foreground">
@@ -124,7 +124,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={fillConsultant}
-                className="w-full text-left p-3 bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
+                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
               >
                 <p className="text-sm font-medium text-foreground">Consultant</p>
                 <p className="text-xs text-muted-foreground">

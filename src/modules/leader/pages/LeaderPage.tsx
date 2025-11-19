@@ -1,23 +1,17 @@
 import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Search, ArrowUpDown } from "lucide-react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
-import { Input } from "@/shared/components/ui/Input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
 import { Button } from "@/shared/components/ui/button"
 import StatsCard from "@/shared/components/common/StatsCard"
+import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
+import { useDataFilter } from "@/shared/hooks/useDataFilter"
 import { useGetTeamMembersQuery } from "../store/leaderApi"
 import TrainingTracksDialog from "../components/TrainingTracksDialog"
 import TeamMemberCard from "../components/TeamMemberCard"
 
-const ITEMS_PER_PAGE = 6
-
 export default function LeaderDashboard() {
   const [selectedMember, setSelectedMember] = useState<{ id: number; name: string } | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedRole, setSelectedRole] = useState<string>("all")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [currentPage, setCurrentPage] = useState(1)
   
   // RTK Query hook
   const { 
@@ -25,6 +19,26 @@ export default function LeaderDashboard() {
     isLoading: membersLoading, 
     error: membersError 
   } = useGetTeamMembersQuery()
+
+  // Data filtering hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    updateFilter,
+    sortOrder,
+    toggleSortOrder,
+    currentPage,
+    setCurrentPage,
+    filteredAndSortedData,
+    paginatedData,
+    totalPages
+  } = useDataFilter({
+    data: teamMembers || [],
+    searchFields: ["name"],
+    sortField: "name",
+    itemsPerPage: 6
+  })
 
   // Extract unique roles
   const roles = useMemo(() => {
@@ -37,47 +51,24 @@ export default function LeaderDashboard() {
     return Array.from(uniqueRoles).sort()
   }, [teamMembers])
 
-  // Filter and sort team members
-  const filteredAndSortedMembers = useMemo(() => {
-    if (!teamMembers) return []
-    
-    const filtered = teamMembers.filter(member => {
-      // Filter by search term (name)
-      const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      // Filter by role
-      const matchesRole = selectedRole === "all" || member.role === selectedRole
-      
-      return matchesSearch && matchesRole
-    })
-
-    // Sort alphabetically by name
-    filtered.sort((a, b) => {
-      const nameA = a.name.toLowerCase()
-      const nameB = b.name.toLowerCase()
-      
-      if (sortOrder === "asc") {
-        return nameA.localeCompare(nameB)
-      } else {
-        return nameB.localeCompare(nameA)
-      }
-    })
-
-    return filtered
-  }, [teamMembers, searchTerm, selectedRole, sortOrder])
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedMembers.length / ITEMS_PER_PAGE)
-  const paginatedMembers = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-    const endIndex = startIndex + ITEMS_PER_PAGE
-    return filteredAndSortedMembers.slice(startIndex, endIndex)
-  }, [filteredAndSortedMembers, currentPage])
-
-  // Reset to page 1 when filters change
-  useMemo(() => {
-    setCurrentPage(1)
-  }, [searchTerm, selectedRole, sortOrder])
+  // Filter configuration
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: "role",
+      label: "Role",
+      placeholder: "All Roles",
+      options: roles.map(role => ({ value: role, label: role }))
+    },
+    {
+      key: "status",
+      label: "Status",
+      placeholder: "All Statuses",
+      options: [
+        { value: "at_risk", label: "At Risk" },
+        { value: "on_track", label: "On Track" }
+      ]
+    }
+  ]
 
   // Calculate team statistics from team members data
   const teamStats = useMemo(() => {
@@ -104,11 +95,6 @@ export default function LeaderDashboard() {
       topPerformers
     }
   }, [teamMembers])
-
-  // Toggle sort order
-  const toggleSortOrder = () => {
-    setSortOrder(prev => prev === "asc" ? "desc" : "asc")
-  }
 
   // Loading state
   if (membersLoading) {
@@ -179,53 +165,25 @@ export default function LeaderDashboard() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Team Progress</h2>
         
-        {/* Search and Filter Section */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Search by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Role Filter */}
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="All Roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              {roles.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {role}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Sort Button */}
-          <Button
-            variant="outline"
-            onClick={toggleSortOrder}
-            className="w-full sm:w-auto"
-          >
-            <ArrowUpDown className="w-4 h-4 mr-2" />
-            {sortOrder === "asc" ? "A-Z" : "Z-A"}
-          </Button>
-        </div>
+        {/* Filters */}
+        <FilterControls
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search by name..."
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={updateFilter}
+          sortOrder={sortOrder}
+          onSortToggle={toggleSortOrder}
+        />
 
         {/* Results Count */}
         <div className="text-sm text-muted-foreground">
-          Showing {paginatedMembers.length} of {filteredAndSortedMembers.length} members
+          Showing {paginatedData.length} of {filteredAndSortedData.length} members
         </div>
 
         {/* Team Members Cards */}
-        {filteredAndSortedMembers.length === 0 ? (
+        {filteredAndSortedData.length === 0 ? (
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>No team members found</AlertTitle>
@@ -236,7 +194,7 @@ export default function LeaderDashboard() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {paginatedMembers.map((member) => (
+              {paginatedData.map((member) => (
                 <TeamMemberCard
                   key={member.id}
                   member={member}

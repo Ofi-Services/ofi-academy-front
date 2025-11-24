@@ -212,7 +212,7 @@ export default function CoursesDashboard() {
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-6">
               <Button
-                variant="outline"
+                variant="muted"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
@@ -223,7 +223,7 @@ export default function CoursesDashboard() {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button
                     key={page}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant={currentPage === page ? "default" : "muted"}
                     onClick={() => setCurrentPage(page)}
                     className="min-w-10 px-3"
                   >
@@ -233,7 +233,7 @@ export default function CoursesDashboard() {
               </div>
 
               <Button
-                variant="outline"
+                variant="muted"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
               >

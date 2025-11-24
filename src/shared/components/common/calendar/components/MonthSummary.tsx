@@ -21,7 +21,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { MonthSummaryProps } from "./types";
+import { MonthSummaryProps } from "../types";
 import {
   getCategoryIcon,
   getPlatformIcon,
@@ -30,7 +30,7 @@ import {
   getPlatformLabel,
   formatDueDateRelative,
   isTrackOverdue,
-} from "./utils";
+} from "../utils";
 
 export const MonthSummary: React.FC<MonthSummaryProps> = ({
   summary,

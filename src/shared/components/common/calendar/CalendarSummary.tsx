@@ -11,7 +11,8 @@ import {
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { cn } from '@/shared/lib/utils';
 import { MONTH_NAMES, DAY_NAMES, CALENDAR_GRID_SIZE } from './constants';
-import { MonthSummary } from './MonthSummary';
+import { MonthSummary } from './components/MonthSummary';
+import { DayHoverCard } from './components/DayHoverCard';
 import { 
   getCategoryIcon, 
   getDateString, 
@@ -29,6 +30,7 @@ import type {
  * Training Calendar Component with RTK Query
  * Updated for Training Tracks with Nullable Fields Support
  * Protected against string overflow
+ * NOW WITH HOVER CARDS!
  */
 const TrainingCalendar: React.FC<TrainingCalendarProps> = ({ 
   userId,
@@ -283,69 +285,74 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                 const hasTracks = dayData.summary && dayData.summary.totalTracks > 0;
 
                 return (
-                  <div
+                  <DayHoverCard 
                     key={`${dayData.date}-${index}`}
-                    className={cn(
-                      "p-2 border border-border/50 cursor-pointer hover:bg-accent/50 transition-colors min-h-[80px] relative overflow-hidden",
-                      !dayData.isCurrentMonth && "text-muted-foreground bg-border/40",
-                      // Días con tracks en color verde suave
-                      dayData.isCurrentMonth && hasTracks && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
-                      dayData.isWeekend && dayData.isCurrentMonth && !hasTracks && "bg-accent/20",
-                      // Días con due dates en amarillo (sobrescribe verde)
-                      hasDueDateTracks && "bg-secondary/10 border-warning/40 dark:bg-warning/15",
-                      // Today destaca más (sobrescribe otros)
-                      dayData.isToday && "bg-primary/10 border-primary/30 font-semibold ring-1 ring-primary/30",
-                      // Seleccionado destaca más aún
-                      selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50"
-                    )}
-                    onClick={() => handleDateClick(dayData)}
+                    daySummary={dayData.summary}
+                    date={dayData.date}
                   >
-                    <div className="flex items-center justify-between mb-2 gap-1 min-w-0">
-                      <span className={cn(
-                        "text-sm font-medium flex-shrink-0",
-                        dayData.isToday && "text-primary font-bold"
-                      )}>
-                        {dayData.day}
-                      </span>
-                      {dayData.summary && dayData.summary.totalTracks > 0 && (
-                        <Badge 
-                          variant={hasOverdueTracks ? "destructive" : "outline"} 
-                          className="text-xs h-5 flex-shrink-0"
-                        >
-                          {dayData.summary.totalTracks}
-                        </Badge>
+                    <div
+                      className={cn(
+                        "p-2 border border-border/50 cursor-pointer hover:bg-accent/50 transition-colors h-full relative",
+                        !dayData.isCurrentMonth && "text-muted-foreground bg-border/40",
+                        // Días con tracks en color verde suave
+                        dayData.isCurrentMonth && hasTracks && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
+                        dayData.isWeekend && dayData.isCurrentMonth && !hasTracks && "bg-accent/20",
+                        // Días con due dates en amarillo (sobrescribe verde)
+                        hasDueDateTracks && "bg-secondary/10 border-warning/40 dark:bg-warning/15",
+                        // Today destaca más (sobrescribe otros)
+                        dayData.isToday && "bg-primary/10 border-primary/30 font-semibold ring-1 ring-primary/30",
+                        // Seleccionado destaca más aún
+                        selectedDate === dayData.date && "bg-primary/20 border-primary ring-2 ring-primary/50"
                       )}
-                    </div>
-
-                    {/* Category indicators */}
-                    {dayData.isCurrentMonth && dayData.summary && (
-                      <div className="space-y-1 overflow-hidden">
-                        {Object.entries(dayData.summary.tracksByCategory)
-                          .slice(0, 2)
-                          .map(([category, count]) => (
-                            <div 
-                              key={category} 
-                              className="flex items-center gap-1 text-xs min-w-0"
-                              title={`${category}: ${count} tracks`}
-                            >
-                              {getCategoryIcon(category, 'w-3 h-3 flex-shrink-0')}
-                              <span className="truncate text-muted-foreground">{category}</span>
-                              <span className="text-muted-foreground flex-shrink-0">({count})</span>
-                            </div>
-                          ))}
-                        {dayData.summary.completedTracks > 0 && (
-                          <div className="text-xs text-green-600 font-medium whitespace-nowrap">
-                            ✓ {dayData.summary.completedTracks}
-                          </div>
-                        )}
-                        {completionRate > 0 && completionRate < 100 && (
-                          <div className="text-xs text-blue-600 font-medium whitespace-nowrap">
-                            {completionRate}%
-                          </div>
+                      onClick={() => handleDateClick(dayData)}
+                    >
+                      <div className="flex items-center justify-between mb-2 gap-1 min-w-0">
+                        <span className={cn(
+                          "text-sm font-medium flex-shrink-0",
+                          dayData.isToday && "text-primary font-bold"
+                        )}>
+                          {dayData.day}
+                        </span>
+                        {dayData.summary && dayData.summary.totalTracks > 0 && (
+                          <Badge 
+                            variant={hasOverdueTracks ? "destructive" : "outline"} 
+                            className="text-xs h-5 flex-shrink-0"
+                          >
+                            {dayData.summary.totalTracks}
+                          </Badge>
                         )}
                       </div>
-                    )}
-                  </div>
+
+                      {/* Category indicators */}
+                      {dayData.isCurrentMonth && dayData.summary && (
+                        <div className="space-y-1 overflow-hidden">
+                          {Object.entries(dayData.summary.tracksByCategory)
+                            .slice(0, 2)
+                            .map(([category, count]) => (
+                              <div 
+                                key={category} 
+                                className="flex items-center gap-1 text-xs min-w-0"
+                                title={`${category}: ${count} tracks`}
+                              >
+                                {getCategoryIcon(category, 'w-3 h-3 flex-shrink-0')}
+                                <span className="truncate text-muted-foreground">{category}</span>
+                                <span className="text-muted-foreground flex-shrink-0">({count})</span>
+                              </div>
+                            ))}
+                          {dayData.summary.completedTracks > 0 && (
+                            <div className="text-xs text-green-600 font-medium whitespace-nowrap">
+                              ✓ {dayData.summary.completedTracks}
+                            </div>
+                          )}
+                          {completionRate > 0 && completionRate < 100 && (
+                            <div className="text-xs text-blue-600 font-medium whitespace-nowrap">
+                              {completionRate}%
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </DayHoverCard>
                 );
               })}
             </div>

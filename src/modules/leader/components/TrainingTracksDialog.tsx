@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,8 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  FileText
+  FileText,
+  TrendingUp
 } from "lucide-react"
 import { 
   useGetUserTrainingTracksQuery,
@@ -26,6 +27,7 @@ import {
 } from "../store/leaderApi"
 import { Progress } from "@/shared/components/ui/progress"
 import { Card, CardContent } from "@/shared/components/ui/card"
+import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
 
 interface TrainingTracksDialogProps {
   userId: number
@@ -42,6 +44,15 @@ export default function TrainingTracksDialog({
 }: TrainingTracksDialogProps) {
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null)
   const [currentCourseIndex, setCurrentCourseIndex] = useState(0)
+  
+  // Filter states
+  const [searchValue, setSearchValue] = useState("")
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({
+    status: "all",
+    progress: "all",
+    dueDate: "all"
+  })
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
   // Fetch training tracks
   const { 
@@ -59,6 +70,120 @@ export default function TrainingTracksDialog({
     { userId, trackId: selectedTrackId! },
     { skip: !selectedTrackId }
   )
+
+  // Filter configuration
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: "status",
+      label: "Status",
+      placeholder: "All Statuses",
+      icon: CheckCircle2,
+      options: [
+        { value: "completed", label: "Completed" },
+        { value: "in_progress", label: "In Progress" },
+        { value: "overdue", label: "Overdue" }
+      ]
+    },
+    {
+      key: "progress",
+      label: "Progress",
+      placeholder: "All Progress",
+      icon: TrendingUp,
+      options: [
+        { value: "0-25", label: "0-25%" },
+        { value: "26-50", label: "26-50%" },
+        { value: "51-75", label: "51-75%" },
+        { value: "76-100", label: "76-100%" }
+      ]
+    },
+    {
+      key: "dueDate",
+      label: "Due Date",
+      placeholder: "All Due Dates",
+      icon: Calendar,
+      options: [
+        { value: "this_week", label: "This Week" },
+        { value: "this_month", label: "This Month" },
+        { value: "next_month", label: "Next Month" },
+        { value: "overdue", label: "Overdue" }
+      ]
+    }
+  ]
+  // Filtered and sorted tracks
+const filteredTracks = useMemo(() => {
+  if (!trainingTracks) return []
+
+  const filtered = trainingTracks.filter((track) => {
+    // Search filter
+    if (searchValue) {
+      const searchLower = searchValue.toLowerCase()
+      const matchesTitle = track.title.toLowerCase().includes(searchLower)
+      const matchesPlatform = track.platform.toLowerCase().includes(searchLower)
+      if (!matchesTitle && !matchesPlatform) return false
+    }
+
+    // Status filter
+    if (filterValues.status !== "all") {
+      if (filterValues.status === "completed" && !track.is_completed) return false
+      if (filterValues.status === "overdue" && !track.is_overdue) return false
+      if (filterValues.status === "in_progress" && (track.is_completed || track.is_overdue)) return false
+    }
+
+    // Progress filter
+    if (filterValues.progress !== "all") {
+      const progress = track.progress_percentage
+      const [min, max] = filterValues.progress.split("-").map(Number)
+      if (progress < min || progress > max) return false
+    }
+
+    // Due date filter
+    if (filterValues.dueDate !== "all") {
+      const dueDate = new Date(track.due_date)
+      dueDate.setHours(0, 0, 0, 0)
+      
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (filterValues.dueDate === "overdue") {
+        // Fechas anteriores a hoy
+        if (dueDate >= today) return false
+      }
+      
+      if (filterValues.dueDate === "this_week") {
+        // Desde hoy hasta 7 días adelante
+        const weekFromNow = new Date(today)
+        weekFromNow.setDate(weekFromNow.getDate() + 7)
+        if (dueDate < today || dueDate > weekFromNow) return false
+      }
+      
+      if (filterValues.dueDate === "this_month") {
+        // Desde hoy hasta el final del mes actual
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+        endOfMonth.setHours(0, 0, 0, 0)
+        if (dueDate < today || dueDate > endOfMonth) return false
+      }
+      
+      if (filterValues.dueDate === "next_month") {
+        // Todo el próximo mes calendario
+        const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+        const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0)
+        startOfNextMonth.setHours(0, 0, 0, 0)
+        endOfNextMonth.setHours(0, 0, 0, 0)
+        if (dueDate < startOfNextMonth || dueDate > endOfNextMonth) return false
+      }
+    }
+
+    return true
+  })
+
+  // Sort by title
+  filtered.sort((a, b) => {
+    const comparison = a.title.localeCompare(b.title)
+    return sortOrder === "asc" ? comparison : -comparison
+  })
+
+  return filtered
+}, [trainingTracks, searchValue, filterValues, sortOrder])
 
   const handleTrackSelect = (trackId: number) => {
     setSelectedTrackId(trackId)
@@ -80,6 +205,14 @@ export default function TrainingTracksDialog({
     if (currentCourseIndex > 0) {
       setCurrentCourseIndex(prev => prev - 1)
     }
+  }
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilterValues(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleSortToggle = () => {
+    setSortOrder(prev => prev === "asc" ? "desc" : "asc")
   }
 
   const formatDate = (dateString: string) => {
@@ -129,6 +262,21 @@ export default function TrainingTracksDialog({
         {/* List View - Training Tracks */}
         {!selectedTrackId && (
           <div className="space-y-4">
+            {/* Filter Controls */}
+            {trainingTracks && trainingTracks.length > 0 && (
+              <FilterControls
+                searchValue={searchValue}
+                onSearchChange={setSearchValue}
+                searchPlaceholder="Search by title or platform..."
+                filters={filterConfigs}
+                filterValues={filterValues}
+                onFilterChange={handleFilterChange}
+                sortOrder={sortOrder}
+                onSortToggle={handleSortToggle}
+                sortLabels={{ asc: "A-Z", desc: "Z-A" }}
+              />
+            )}
+
             {tracksLoading && (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -155,7 +303,16 @@ export default function TrainingTracksDialog({
               </Alert>
             )}
 
-            {trainingTracks?.map((track) => (
+            {trainingTracks && trainingTracks.length > 0 && filteredTracks.length === 0 && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  No training tracks match your filters. Try adjusting your search or filters.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {filteredTracks.map((track) => (
               <Card 
                 key={track.id}
                 className="hover:shadow-md transition-shadow cursor-pointer"

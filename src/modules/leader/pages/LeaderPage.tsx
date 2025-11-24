@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award } from "lucide-react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, FileText } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
@@ -9,16 +9,79 @@ import { useDataFilter } from "@/shared/hooks/useDataFilter"
 import { useGetTeamMembersQuery } from "../store/leaderApi"
 import TrainingTracksDialog from "../components/TrainingTracksDialog"
 import TeamMemberCard from "../components/TeamMemberCard"
+// 1. Import useToast
+import { useToast } from "@/shared/hooks/use-toast"
 
 export default function LeaderDashboard() {
   const [selectedMember, setSelectedMember] = useState<{ id: number; name: string } | null>(null)
-  
+  // 2. Initialize toast hook
+  const { toast } = useToast()
+
+  // --- Mock HTTP Request Function ---
+  // 3. Function to simulate an API call for generating the report
+  const generateReport = (): Promise<boolean> => {
+    // 90% chance of success
+    const isSuccess = Math.random() < 0.9
+
+    // Simulate network latency
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(isSuccess)
+      }, 1500) // 1.5s delay
+    })
+  }
+
+  // 4. Handler for the button click
+  const handleGenerateReport = async () => {
+    const loadingToast = toast({
+      title: "Generating Report...",
+      description: "Please wait while your team overview report is being prepared.",
+      variant: "default",
+      duration: 999999, // Keep open until updated
+    })
+
+    try {
+      const success = await generateReport()
+
+      if (success) {
+        loadingToast.update({
+          title: "✅ Report Generated!",
+          description: "The Team Overview report has been successfully created and is ready for download.",
+          variant: "default",
+          duration: 5000,
+          id: '', // Allow it to auto-remove
+        })
+      } else {
+        loadingToast.update({
+          title: "❌ Report Generation Failed",
+          description: "An unexpected error occurred while creating the report. Please try again.",
+          variant: "destructive",
+          duration: 5000,
+          id: 'undefined', // Allow it to auto-remove
+
+        })
+      }
+    } catch (error) {
+      loadingToast.update({
+        title: "❌ Network Error",
+        description: "Could not connect to the server to generate the report.",
+        variant: "destructive",
+        duration: 5000,
+        id: 'undefined', // Allow it to auto-remove
+
+      })
+    }
+  }
+  // --- End Mock HTTP Request Function ---
+
   // RTK Query hook
-  const { 
-    data: teamMembers, 
-    isLoading: membersLoading, 
-    error: membersError 
+  const {
+    data: teamMembers,
+    isLoading: membersLoading,
+    error: membersError
   } = useGetTeamMembersQuery()
+
+  // ... (Rest of the useDataFilter, useMemo, filterConfigs, and teamStats are unchanged) ...
 
   // Data filtering hook
   const {
@@ -101,13 +164,13 @@ export default function LeaderDashboard() {
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Team Overview</h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-32 w-full" />
           ))}
         </div>
-        
+
         <Skeleton className="h-96 w-full" />
       </div>
     )
@@ -130,7 +193,15 @@ export default function LeaderDashboard() {
   }
 
   return (
-    <>
+    <div className="relative"> {/* 5. Add relative positioning for absolute button placement */}
+      {/* 6. Button positioned absolutely in the top right corner */}
+      <Button
+        onClick={handleGenerateReport}
+        className="absolute top-0 right-0 z-10" // Adjust z-index if needed
+      >
+        <FileText className="mr-2 h-4 w-4" /> Generate Report
+      </Button>
+
       <h1 className="text-3xl font-bold mb-8">Team Overview</h1>
 
       {/* Stats Cards */}
@@ -164,7 +235,7 @@ export default function LeaderDashboard() {
       {/* Team Members Section */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Team Progress</h2>
-        
+
         {/* Filters */}
         <FilterControls
           searchValue={searchTerm}
@@ -213,7 +284,7 @@ export default function LeaderDashboard() {
                 >
                   Previous
                 </Button>
-                
+
                 <div className="flex gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <Button
@@ -249,6 +320,6 @@ export default function LeaderDashboard() {
           onOpenChange={(open) => !open && setSelectedMember(null)}
         />
       )}
-    </>
+    </div>
   )
 }

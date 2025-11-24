@@ -3,12 +3,13 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux"; // ← IMPORTAR
-import { baseApi } from "@/core/api/baseApi"; // ← IMPORTAR
-import { coursesApi } from "@/shared/store/coursesApi"; // ← IMPORTAR
+import { useDispatch } from "react-redux";
+import { baseApi } from "@/core/api/baseApi";
+import { coursesApi } from "@/shared/store/coursesApi";
 import { leaderApi } from "@/modules/leader/store/leaderApi";
 
 type UserRole = "Talent" | "Leader" | "HR";
@@ -34,36 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // ← AGREGAR
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    // Check for SAML callback tokens in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get("access");
-    const refreshToken = urlParams.get("refresh");
-
-    if (accessToken && refreshToken) {
-      // Handle SAML callback
-      handleSamlCallback(accessToken, refreshToken);
-      return;
-    }
-
-    // Check for stored user
-    const storedUser = localStorage.getItem("ofi_user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("[AuthProvider] Error parsing stored user:", error);
-        localStorage.removeItem("ofi_user");
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleSamlCallback = async (accessToken: string, refreshToken: string) => {
+  const handleSamlCallback = useCallback(async (accessToken: string, refreshToken: string) => {
     setIsLoading(true);
     try {
+      console.log("[AuthProvider] Processing SAML callback with tokens");
+      
       // Store tokens
       localStorage.setItem("ofi_token", accessToken);
       if (refreshToken) {
@@ -83,21 +61,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user data");
+        const errorText = await response.text();
+        console.error("[AuthProvider] Profile fetch failed:", response.status, errorText);
+        throw new Error(`Failed to fetch user data: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("[AuthProvider] User data received:", data);
+
+      // Handle role mapping - backend returns role name, frontend expects specific role types
+      let userRole: UserRole = "Talent";
+      if (data.role) {
+        const roleLower = data.role.toLowerCase();
+        if (roleLower.includes("leader") || roleLower.includes("lead")) {
+          userRole = "Leader";
+        } else if (roleLower.includes("hr") || roleLower.includes("human resources")) {
+          userRole = "HR";
+        } else {
+          userRole = "Talent";
+        }
+      }
 
       const userData: User = {
         id: String(data.id),
         name:
           data.first_name || data.last_name
-            ? `${data.first_name} ${data.last_name}`.trim()
-            : data.username || data.email,
-        email: data.email || data.username,
-        role: data.role,
+            ? `${data.first_name || ""} ${data.last_name || ""}`.trim()
+            : data.username || data.email || "User",
+        email: data.email || data.username || "",
+        role: userRole,
         avatar: "/default-avatar.png",
       };
+
+      console.log("[AuthProvider] Processed user data:", userData);
 
       setUser(userData);
       localStorage.setItem("ofi_user", JSON.stringify(userData));
@@ -124,7 +120,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    // Check for SAML callback tokens in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get("access");
+    const refreshToken = urlParams.get("refresh");
+
+    if (accessToken && refreshToken) {
+      console.log("[AuthProvider] SAML tokens detected in URL");
+      // Handle SAML callback
+      handleSamlCallback(accessToken, refreshToken);
+      return;
+    }
+
+    // Check for stored user
+    const storedUser = localStorage.getItem("ofi_user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("[AuthProvider] Error parsing stored user:", error);
+        localStorage.removeItem("ofi_user");
+      }
+    }
+    setIsLoading(false);
+  }, [handleSamlCallback]);
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);

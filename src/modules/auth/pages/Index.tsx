@@ -5,17 +5,7 @@ import { useMicrosoftAuth } from "../hooks/useMicrosoftAuth"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
-import { AlertCircle, Sparkles, Loader2 } from "lucide-react"
-
-// Logo de Microsoft (colores oficiales)
-const MicrosoftLogo = () => (
-  <svg viewBox="0 0 21 21" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-    <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-    <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-    <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-  </svg>
-);
+import { AlertCircle, Sparkles } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -60,8 +50,6 @@ export default function LoginPage() {
     setEmail("m.rozo@ofiservices.com")
     setPassword("257758741")
   }
-
-  const isAnyLoading = isLoading || isMicrosoftLoading
 
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-colors">
@@ -176,6 +164,27 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+
+          {/* SAML Login Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+
+          {/* SAML Login Button */}
+          <Button
+            type="button"
+            onClick={handleSamlLogin}
+            variant="outline"
+            className="w-full h-12 border-border hover:bg-accent font-semibold text-base transition-colors"
+          >
+            <Shield className="mr-2 h-5 w-5" />
+            Sign in with Microsoft
+          </Button>
 
           {/* Demo credentials */}
           <div className="mt-8 p-6 bg-accent rounded-2xl border border-border">

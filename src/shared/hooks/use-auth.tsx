@@ -37,6 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const dispatch = useDispatch(); // ← AGREGAR
 
   useEffect(() => {
+    // Check for SAML callback tokens in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get("access");
+    const refreshToken = urlParams.get("refresh");
+
+    if (accessToken && refreshToken) {
+      // Handle SAML callback
+      handleSamlCallback(accessToken, refreshToken);
+      return;
+    }
+
+    // Check for stored user
     const storedUser = localStorage.getItem("ofi_user");
     if (storedUser) {
       try {
@@ -48,6 +60,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setIsLoading(false);
   }, []);
+
+  const handleSamlCallback = async (accessToken: string, refreshToken: string) => {
+    setIsLoading(true);
+    try {
+      // Store tokens
+      localStorage.setItem("ofi_token", accessToken);
+      if (refreshToken) {
+        localStorage.setItem("ofi_refresh_token", refreshToken);
+      }
+
+      // Fetch user data from backend profile endpoint
+      const response = await fetch(
+        "https://ofiacademy.api.sofiatechnology.ai/api/auth/profile/",
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+
+      const data = await response.json();
+
+      const userData: User = {
+        id: String(data.id),
+        name:
+          data.first_name || data.last_name
+            ? `${data.first_name} ${data.last_name}`.trim()
+            : data.username || data.email,
+        email: data.email || data.username,
+        role: data.role,
+        avatar: "/default-avatar.png",
+      };
+
+      setUser(userData);
+      localStorage.setItem("ofi_user", JSON.stringify(userData));
+
+      // Remove tokens from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Navigate based on role
+      if (userData.role === "Talent") {
+        navigate("/courses");
+      } else if (userData.role === "Leader") {
+        navigate("/leader/dashboard");
+      } else if (userData.role === "HR") {
+        navigate("/hr/dashboard");
+      } else {
+        navigate("/courses");
+      }
+    } catch (error) {
+      console.error("[AuthProvider] SAML callback error:", error);
+      // Clear tokens on error
+      localStorage.removeItem("ofi_token");
+      localStorage.removeItem("ofi_refresh_token");
+      navigate("/login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);

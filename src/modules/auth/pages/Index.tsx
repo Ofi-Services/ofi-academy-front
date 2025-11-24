@@ -4,8 +4,7 @@ import { useAuth } from "@/shared/hooks/use-auth"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
-import { AlertCircle, Sparkles } from "lucide-react"
-import { Microsoft } from "lucide-react"
+import { AlertCircle, Sparkles, Shield } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -124,7 +123,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full h-12 border-border hover:bg-accent font-semibold text-base transition-colors"
           >
-            <Microsoft className="mr-2 h-5 w-5" />
+            <Shield className="mr-2 h-5 w-5" />
             Sign in with Microsoft
           </Button>
 

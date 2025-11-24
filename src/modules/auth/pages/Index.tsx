@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
 import { AlertCircle, Sparkles } from "lucide-react"
+import { Microsoft } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -33,6 +34,10 @@ export default function LoginPage() {
   const fillConsultant = () => {
     setEmail("m.rozo@ofiservices.com")
     setPassword("257758741")
+  }
+
+  const handleSamlLogin = () => {
+    window.location.href = "https://ofiacademy.api.sofiatechnology.ai/saml/sso/"
   }
 
   return (
@@ -101,6 +106,27 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+
+          {/* SAML Login Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+
+          {/* SAML Login Button */}
+          <Button
+            type="button"
+            onClick={handleSamlLogin}
+            variant="outline"
+            className="w-full h-12 border-border hover:bg-accent font-semibold text-base transition-colors"
+          >
+            <Microsoft className="mr-2 h-5 w-5" />
+            Sign in with Microsoft
+          </Button>
 
           {/* Demo credentials */}
           <div className="mt-8 p-6 bg-accent rounded-2xl border border-border">

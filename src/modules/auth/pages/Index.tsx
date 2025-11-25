@@ -4,7 +4,7 @@ import { useAuth } from "@/shared/hooks/use-auth"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
-import { AlertCircle, Sparkles, Shield } from "lucide-react"
+import { AlertCircle, Shield } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -23,16 +23,6 @@ export default function LoginPage() {
       setError("Incorrect credentials. Please try again.")
       setIsLoading(false)
     }
-  }
-
-  const fillLeader = () => {
-    setEmail("a.cordoba@ofiservices.com")
-    setPassword("604216018")
-  }
-
-  const fillConsultant = () => {
-    setEmail("m.rozo@ofiservices.com")
-    setPassword("257758741")
   }
 
   const handleSamlLogin = () => {
@@ -126,38 +116,6 @@ export default function LoginPage() {
             <Shield className="mr-2 h-5 w-5" />
             Sign in with Microsoft
           </Button>
-
-          {/* Demo credentials */}
-          <div className="mt-8 p-6 bg-accent rounded-2xl border border-border">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <p className="text-sm font-semibold text-foreground">
-                Demo Credentials
-              </p>
-            </div>
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={fillLeader}
-                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
-              >
-                <p className="text-sm font-medium text-foreground">HR</p>
-                <p className="text-xs text-muted-foreground">
-                  a.cordoba@ofiservices.co
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={fillConsultant}
-                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
-              >
-                <p className="text-sm font-medium text-foreground">Consultant</p>
-                <p className="text-xs text-muted-foreground">
-                  m.rozo@ofiservices.com
-                </p>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

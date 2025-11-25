@@ -1,11 +1,10 @@
 import type React from "react"
 import { useState } from "react"
 import { useAuth } from "@/shared/hooks/use-auth"
-import { useMicrosoftAuth } from "../hooks/useMicrosoftAuth"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/Input"
 import { Label } from "@/shared/components/ui/label"
-import { AlertCircle, Sparkles } from "lucide-react"
+import { AlertCircle, Sparkles, Shield } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -13,13 +12,6 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
-
-  // Hook de Microsoft Auth
-  const { 
-    loginWithMicrosoft, 
-    isLoading: isMicrosoftLoading,
-    state: microsoftState 
-  } = useMicrosoftAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,14 +25,6 @@ export default function LoginPage() {
     }
   }
 
-  const handleMicrosoftLogin = async () => {
-    try {
-      await loginWithMicrosoft()
-    } catch (error) {
-      console.error('Microsoft login error:', error)
-    }
-  }
-
   const fillLeader = () => {
     setEmail("a.cordoba@ofiservices.com")
     setPassword("604216018")
@@ -49,6 +33,10 @@ export default function LoginPage() {
   const fillConsultant = () => {
     setEmail("m.rozo@ofiservices.com")
     setPassword("257758741")
+  }
+
+  const handleSamlLogin = () => {
+    window.location.href = "https://ofiacademy.api.sofiatechnology.ai/saml/sso/"
   }
 
   return (
@@ -70,51 +58,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* ========================================= */}
-          {/* BOTÓN DE MICROSOFT - OPCIÓN 1: Arriba    */}
-          {/* ========================================= */}
-          <div className="mb-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleMicrosoftLogin}
-              disabled={isAnyLoading}
-              className="w-full h-12 border-border hover:bg-accent/50 transition-colors"
-            >
-              {isMicrosoftLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <MicrosoftLogo />
-                  <span className="ml-3">Continue with Microsoft</span>
-                </>
-              )}
-            </Button>
-
-            {/* Error de Microsoft */}
-            {microsoftState.error && (
-              <div className="flex items-center gap-2 p-3 mt-3 bg-destructive/10 border border-destructive/30 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
-                <p className="text-xs text-destructive">{microsoftState.error}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Divisor */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-3 text-muted-foreground font-medium">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -128,7 +71,6 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={isAnyLoading}
                 className="h-12 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -144,7 +86,6 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={isAnyLoading}
                 className="h-12 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -158,7 +99,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={isAnyLoading}
+              disabled={isLoading}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
             >
               {isLoading ? "Signing in..." : "Sign In"}
@@ -198,8 +139,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={fillLeader}
-                disabled={isAnyLoading}
-                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
               >
                 <p className="text-sm font-medium text-foreground">HR</p>
                 <p className="text-xs text-muted-foreground">
@@ -209,8 +149,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={fillConsultant}
-                disabled={isAnyLoading}
-                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full text-left p-3 bg-accent hover:bg-primary/50 rounded-lg transition-colors"
               >
                 <p className="text-sm font-medium text-foreground">Consultant</p>
                 <p className="text-xs text-muted-foreground">

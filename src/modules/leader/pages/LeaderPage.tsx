@@ -114,6 +114,28 @@ export default function LeaderDashboard() {
     return Array.from(uniqueRoles).sort()
   }, [teamMembers])
 
+  // Extract unique regions
+  const regions = useMemo(() => {
+    if (!teamMembers) return []
+    const uniqueRegions = new Set(
+      teamMembers
+        .map(member => member.region)
+        .filter((region): region is string => region !== undefined)
+    )
+    return Array.from(uniqueRegions).sort()
+  }, [teamMembers])
+
+  // Extract unique titles
+  const titles = useMemo(() => {
+    if (!teamMembers) return []
+    const uniqueTitles = new Set(
+      teamMembers
+        .map(member => member.title)
+        .filter((title): title is string => title !== undefined)
+    )
+    return Array.from(uniqueTitles).sort()
+  }, [teamMembers])
+
   // Filter configuration
   const filterConfigs: FilterConfig[] = [
     {
@@ -121,6 +143,18 @@ export default function LeaderDashboard() {
       label: "Role",
       placeholder: "All Roles",
       options: roles.map(role => ({ value: role, label: role }))
+    },
+    {
+      key: "region",
+      label: "Region",
+      placeholder: "All Regions",
+      options: regions.map(region => ({ value: region, label: region }))
+    },
+    {
+      key: "title",
+      label: "Title",
+      placeholder: "All Titles",
+      options: titles.map(title => ({ value: title, label: title }))
     },
     {
       key: "status",

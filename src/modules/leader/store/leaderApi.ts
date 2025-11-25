@@ -6,6 +6,8 @@ export interface TeamMember {
   name: string
   email: string
   role: string
+  region: string
+  title: string
   completion_percentage: number
   completed_courses: number
   overdue_courses: number

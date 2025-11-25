@@ -25,6 +25,11 @@ export default function TeamMemberCard({ member, onViewTracks }: TeamMemberCardP
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-1">{member.name}</h3>
               <p className="text-sm text-muted-foreground">{member.email}</p>
+              <div className="flex gap-2 mt-1">
+                <p className="text-xs text-muted-foreground">{member.title}</p>
+                <span className="text-xs text-muted-foreground">•</span>
+                <p className="text-xs text-muted-foreground">{member.region}</p>
+              </div>
             </div>
             <Badge 
               variant={statusConfig.variant}

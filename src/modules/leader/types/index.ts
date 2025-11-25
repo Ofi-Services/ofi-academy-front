@@ -3,6 +3,9 @@ export interface TeamMember {
   id: number
   name: string
   email: string
+  role: string
+  region: string
+  title: string
   status: "excellent" | "on_track" | "at_risk"
   completion_percentage: number
   completed_courses: number

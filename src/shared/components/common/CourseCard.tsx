@@ -104,7 +104,7 @@ export default function CourseCard({
     <>
       <Card className="bg-card border-border transition-all hover:shadow-lg overflow-hidden group">
         {/* Header con color de categoría */}
-        <div className={`relative h-12 ${categoryStyle.gradient} flex items-center justify-center`}>
+        <div className={`relative h-4 ${categoryStyle.gradient} flex items-center justify-center`}>
           {category && (
             <Badge className={`absolute top-3 right-3 ${categoryStyle.badgeClass} backdrop-blur-sm`}>
               {category}

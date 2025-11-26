@@ -1,4 +1,4 @@
-import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target } from "lucide-react"
+import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target, MessageSquare } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -25,6 +25,7 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
+      { label: "Chat", icon: MessageSquare, path: "/teams" },
       //{ label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
       //{ label: "Help & Support", icon: HelpCircle, path: "/support" },
       //{ label: "Settings", icon: Settings, path: "/settings" },
@@ -46,6 +47,7 @@ export const LEADER_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
+      { label: "Chat", icon: MessageSquare, path: "/teams" },
       //{ label: "Team Messages", icon: MessageSquare, path: "/leader/messages" },
       //{ label: "Resources", icon: FileText, path: "/leader/resources" },
       //{ label: "Settings", icon: Settings, path: "/settings" },
@@ -69,6 +71,7 @@ export const HR_NAV: NavSection[] = [
     items: [
       { label: "System Settings", icon: Settings, path: "/superuser/settings" },
       { label: "Help & Support", icon: HelpCircle, path: "/support" },
+      { label: "Chat", icon: MessageSquare, path: "/teams" },
     ],
   },
 ]

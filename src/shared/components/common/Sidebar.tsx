@@ -13,10 +13,10 @@ export default function Sidebar({ navigation, onLogout }: SidebarProps) {
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            ofi
-          </div>
-          <h1 className="text-xl font-bold">OFI Academy</h1>
+          <figure>
+            <img src="/ofi.svg" alt="OFI Logo" className="w-12 h-12" />
+          </figure>
+          <h1 className="text-xl font-bold">Academy</h1>
         </div>
       </div>
 

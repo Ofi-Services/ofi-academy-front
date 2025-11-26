@@ -2,6 +2,7 @@
 import { ReactNode } from "react"
 import Sidebar from "./Sidebar"
 import { NavSection } from "@/shared/config/navigation.config"
+import Header from "./Header"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -13,7 +14,12 @@ export default function DashboardLayout({ children, navigation, onLogout }: Dash
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar navigation={navigation} onLogout={onLogout} />
-      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+      <div className="flex-1 flex flex-col">
+        <Header navigation={navigation} />
+        <main className="flex-1 p-8 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

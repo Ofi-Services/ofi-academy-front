@@ -13,6 +13,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
 
+  // Show traditional login form only in development mode
+  const isDevelopment = import.meta.env.MODE === 'development'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -48,70 +51,78 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-base text-foreground">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
+          {/* Traditional Login Form - Only visible in development */}
+          {isDevelopment && (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-base text-foreground">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-12 border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-base text-foreground">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-12 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-base text-foreground">
+                    Password
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12 border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
 
-            {error && (
-              <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
-                <p className="text-sm text-destructive">{error}</p>
+                {error && (
+                  <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
+                >
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+
+              {/* SAML Login Divider - Only shown when traditional login is visible */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
               </div>
-            )}
+            </>
+          )}
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-colors"
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-
-          {/* SAML Login Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          {/* SAML Login Button */}
+          {/* SAML Login Button - Always visible */}
           <Button
             type="button"
             onClick={handleSamlLogin}
-            variant="outline"
-            className="w-full h-12 border-border hover:bg-accent font-semibold text-base transition-colors"
+            variant={isDevelopment ? "outline" : "default"}
+            className={`w-full h-12 font-semibold text-base transition-colors ${
+              isDevelopment
+                ? "border-border hover:bg-accent"
+                : "bg-primary hover:bg-primary/90 text-primary-foreground"
+            }`}
           >
             <Shield className="mr-2 h-5 w-5" />
             Sign in with Microsoft

@@ -64,7 +64,7 @@ export default function LeaderDashboard() {
     } catch (error) {
       loadingToast.update({
         title: "❌ Network Error",
-        description: "Could not connect to the server to generate the report.",
+        description: "Could not connect to the server to generate the report." + error,
         variant: "destructive",
         duration: 5000,
         id: 'undefined', // Allow it to auto-remove
@@ -167,9 +167,9 @@ export default function LeaderDashboard() {
     }
   ]
 
-  // Calculate team statistics from team members data
+  // Calculate team statistics from filtered data
   const teamStats = useMemo(() => {
-    if (!teamMembers || teamMembers.length === 0) {
+    if (!filteredAndSortedData || filteredAndSortedData.length === 0) {
       return {
         totalMembers: 0,
         averageProgress: 0,
@@ -178,12 +178,12 @@ export default function LeaderDashboard() {
       }
     }
 
-    const totalMembers = teamMembers.length
+    const totalMembers = filteredAndSortedData.length
     const averageProgress = Math.round(
-      teamMembers.reduce((sum, member) => sum + member.completion_percentage, 0) / totalMembers
+      filteredAndSortedData.reduce((sum, member) => sum + member.completion_percentage, 0) / totalMembers
     )
-    const atRiskMembers = teamMembers.filter(member => member.status === "at_risk").length
-    const topPerformers = teamMembers.filter(member => member.status === "excellent").length
+    const atRiskMembers = filteredAndSortedData.filter(member => member.status === "at_risk").length
+    const topPerformers = filteredAndSortedData.filter(member => member.status === "excellent").length
 
     return {
       totalMembers,
@@ -191,13 +191,12 @@ export default function LeaderDashboard() {
       atRiskMembers,
       topPerformers
     }
-  }, [teamMembers])
+  }, [filteredAndSortedData])
 
   // Loading state
   if (membersLoading) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Team Overview</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
@@ -214,7 +213,6 @@ export default function LeaderDashboard() {
   if (membersError) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Team Overview</h1>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -227,17 +225,7 @@ export default function LeaderDashboard() {
   }
 
   return (
-    <div className="relative"> {/* 5. Add relative positioning for absolute button placement */}
-      {/* 6. Button positioned absolutely in the top right corner */}
-      <Button
-        onClick={handleGenerateReport}
-        className="absolute top-0 right-0 z-10" // Adjust z-index if needed
-      >
-        <FileText className="mr-2 h-4 w-4" /> Generate Report
-      </Button>
-
-      <h1 className="text-3xl font-bold mb-8">Team Overview</h1>
-
+    <div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatsCard
@@ -268,7 +256,15 @@ export default function LeaderDashboard() {
 
       {/* Team Members Section */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Team Progress</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Team Progress</h2>
+          <Button
+            onClick={handleGenerateReport}
+            variant="ghost"
+          >
+            <FileText className="mr-2 h-4 w-4" /> Generate Report
+          </Button>
+        </div>
 
         {/* Filters */}
         <FilterControls

@@ -1,6 +1,7 @@
 
 import { NavSection } from "@/shared/config/navigation.config"
 import SidebarItem from "./SidebarItem"
+import { useTheme } from "@/shared/hooks/useTheme"
 
 interface SidebarProps {
   navigation: NavSection[]
@@ -8,13 +9,19 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ navigation, onLogout }: SidebarProps) {
+  const { theme } = useTheme()
+
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-2">
           <figure>
-            <img src="/ofi.svg" alt="OFI Logo" className="w-12 h-12" />
+          <img
+              src={theme === "dark" ? "/ofi-original-white.svg" : "/ofi-original.svg"}
+              alt="OFI logo"
+              className="h-12 w-12"
+            />
           </figure>
           <h1 className="text-xl font-bold">Academy</h1>
         </div>

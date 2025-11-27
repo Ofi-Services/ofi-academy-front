@@ -68,7 +68,7 @@ export default function CourseCard({
   platform,
   category,
   duration,
-  dueDate, // ✅ new prop
+  dueDate,
 }: CourseCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -102,7 +102,7 @@ export default function CourseCard({
 
   return (
     <>
-      <Card className="bg-card border-border transition-all hover:shadow-lg overflow-hidden group">
+      <Card className="bg-card transition-all hover:shadow-lg overflow-hidden group">
         {/* Header con color de categoría */}
         <div className={`relative h-4 ${categoryStyle.gradient} flex items-center justify-center`}>
           {category && (

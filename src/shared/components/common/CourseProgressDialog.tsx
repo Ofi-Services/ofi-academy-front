@@ -156,8 +156,9 @@ export default function CourseProgressDialog({
       const files = prev[moduleId] || []
       const newFiles = files.filter((_, i) => i !== index)
       if (newFiles.length === 0) {
-        const { [moduleId]: _, ...rest } = prev
-        return rest
+        return Object.fromEntries(
+          Object.entries(prev).filter(([key]) => key !== moduleId)
+        ) as ModuleFiles
       }
       return { ...prev, [moduleId]: newFiles }
     })
@@ -167,8 +168,9 @@ export default function CourseProgressDialog({
       const urls = prev[moduleId] || []
       const newUrls = urls.filter((_, i) => i !== index)
       if (newUrls.length === 0) {
-        const { [moduleId]: _, ...rest } = prev
-        return rest
+        return Object.fromEntries(
+          Object.entries(prev).filter(([key]) => key !== moduleId)
+        ) as { [moduleId: string]: string[] }
       }
       return { ...prev, [moduleId]: newUrls }
     })
@@ -257,7 +259,7 @@ export default function CourseProgressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Course Progress</DialogTitle>
+          <DialogTitle className="text-2xl">Training Track Progress</DialogTitle>
           <DialogDescription>Track and update your learning progress</DialogDescription>
         </DialogHeader>
 
@@ -373,7 +375,7 @@ export default function CourseProgressDialog({
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 onClick={() => onOpenChange(false)}
                 disabled={isUpdating}
               >

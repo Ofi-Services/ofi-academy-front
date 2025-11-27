@@ -19,6 +19,8 @@ interface User {
   name: string;
   email: string;
   role: UserRole;
+  region?: string;
+  title?: string;
   avatar?: string;
 }
 
@@ -90,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : data.username || data.email || "User",
         email: data.email || data.username || "",
         role: userRole,
+        region: data.region,
+        title: data.title,
         avatar: "/default-avatar.png",
       };
 

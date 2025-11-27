@@ -95,7 +95,6 @@ export default function CoursesDashboard() {
   if (coursesLoading) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">My Learning Progress</h1>
         
         {/* Stats Loading Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -124,7 +123,6 @@ export default function CoursesDashboard() {
   if (coursesError) {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">My Learning Progress</h1>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -138,7 +136,6 @@ export default function CoursesDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">My Learning Progress</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

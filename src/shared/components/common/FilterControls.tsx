@@ -38,7 +38,7 @@ export default function FilterControls({
   className = ""
 }: FilterControlsProps) {
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
+    <div className={`flex flex-row gap-4 ${className}`}>
       {/* Search Input */}
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

@@ -1,11 +1,8 @@
-import { Checkbox } from "@/shared/components/ui/checkbox"
 import { Label } from "@/shared/components/ui/label"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import {
   Clock,
-  CheckCircle2,
-  Circle,
   Upload,
   X,
   Image as ImageIcon,
@@ -28,7 +25,6 @@ interface ModuleItemProps {
 export default function CourseModuleItem({
   module,
   isCompleted,
-  onToggle,
   files,
   previewUrls,
   onFilesChange,
@@ -82,22 +78,10 @@ export default function CourseModuleItem({
     >
       {/* Module Header */}
       <div className="flex items-start gap-3">
-        <Checkbox
-          id={module.id}
-          checked={isCompleted}
-          onCheckedChange={() => onToggle(module.id)}
-          className="mt-1"
-        />
         <div className="flex-1 space-y-1 min-w-0">
           <div className="flex items-start gap-2">
-            {isCompleted ? (
-              <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-            ) : (
-              <Circle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            )}
             <Label
-              htmlFor={module.id}
-              className={`cursor-pointer font-medium ${
+              className={`font-medium ${
                 isCompleted ? "text-primary" : ""
               }`}
             >
@@ -124,12 +108,12 @@ export default function CourseModuleItem({
             )}
           </div>
           {module.description && (
-            <p className="text-sm text-muted-foreground pl-6">
+            <p className="text-sm text-muted-foreground">
               {module.description}
             </p>
           )}
           {module.duration && (
-            <div className="flex items-center gap-1.5 pl-6 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
               <span>{module.duration}</span>
             </div>
@@ -138,7 +122,7 @@ export default function CourseModuleItem({
       </div>
 
       {/* File Upload Section */}
-      <div className="pl-9 space-y-2">
+      <div className="space-y-2">
         <div className="flex items-center gap-2">
           <input
             type="file"

@@ -13,7 +13,7 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-on-primary hover:bg-primary/90",
         destructive:
-          "bg-error text-on-error",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         muted:
           "bg-muted text-muted-foreground hover:bg-muted/80",
         outline:

@@ -1,6 +1,7 @@
 import { useAuth } from "@/shared/hooks/use-auth";
 import { useLocation } from "react-router-dom";
 import { NavSection } from "@/shared/config/navigation.config";
+import { useTheme } from "@/shared/hooks/useTheme";
 
 interface HeaderProps {
   navigation: NavSection[];
@@ -9,6 +10,7 @@ interface HeaderProps {
 export function Header({ navigation }: HeaderProps) {
   const { user } = useAuth();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   // Find the active navigation item based on current path
   const getActivePageTitle = (): string | null => {
@@ -42,7 +44,7 @@ export function Header({ navigation }: HeaderProps) {
       {/* Active Page Title - Left Side */}
       {activePageTitle && (
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-3xl font-semibold text-foreground">
             {activePageTitle}
           </h2>
         </div>
@@ -50,6 +52,17 @@ export function Header({ navigation }: HeaderProps) {
 
       {/* User Info - Right Side */}
       <div className="flex items-center gap-4">
+        <button
+          type="button"
+          className="toggle-btn"
+          aria-label="Toggle theme"
+          onClick={toggleTheme}
+          data-theme={theme === "dark" ? "dark" : "light"}
+        >
+          <div className="sun-rays" />
+          <div className="main-circle" />
+        </button>
+
         <div className="text-right">
           <div className="text-sm font-semibold">{user.name}</div>
           <div className="text-xs text-muted-foreground">

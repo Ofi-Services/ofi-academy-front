@@ -12,7 +12,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, navigation, onLogout }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
+    <div className="min-h-screen flex bg-background/96 text-foreground">
       <Sidebar navigation={navigation} onLogout={onLogout} />
       <div className="flex-1 flex flex-col">
         <Header navigation={navigation} />

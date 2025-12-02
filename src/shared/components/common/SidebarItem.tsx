@@ -10,10 +10,14 @@ export default function SidebarItem({ item }: SidebarItemProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // ✅ Solo dependemos de la ruta actual
   const isActive = location.pathname === item.path
 
   const handleClick = () => {
+    if (item.path.startsWith("http://") || item.path.startsWith("https://")) {
+      window.open(item.path, "_blank")
+      return
+    }
+
     if (!isActive) navigate(item.path)
   }
 

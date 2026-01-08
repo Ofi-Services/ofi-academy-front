@@ -236,8 +236,7 @@ export default function LeaderDashboard() {
         />
         <StatsCard
           label="Average Progress"
-          /*value={`${teamStats.averageProgress}%`}*/
-          value={`35%`}
+          value={`${teamStats.averageProgress}%`}
           icon={TrendingUp}
           color="success"
         />

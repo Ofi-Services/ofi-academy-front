@@ -25,7 +25,7 @@ export const CONSULTANT_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
-      { label: "Chat", icon: MessageSquare, path: "/teams" },
+      { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
       //{ label: "Discussion Forums", icon: MessageSquare, path: "/forums" },
       //{ label: "Help & Support", icon: HelpCircle, path: "/support" },
       //{ label: "Settings", icon: Settings, path: "/settings" },
@@ -47,7 +47,7 @@ export const LEADER_NAV: NavSection[] = [
   {
     title: "Quick Links",
     items: [
-      { label: "Chat", icon: MessageSquare, path: "/teams" },
+      { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
       //{ label: "Team Messages", icon: MessageSquare, path: "/leader/messages" },
       //{ label: "Resources", icon: FileText, path: "/leader/resources" },
       //{ label: "Settings", icon: Settings, path: "/settings" },
@@ -71,7 +71,7 @@ export const HR_NAV: NavSection[] = [
     items: [
       { label: "System Settings", icon: Settings, path: "/superuser/settings" },
       { label: "Help & Support", icon: HelpCircle, path: "/support" },
-      { label: "Chat", icon: MessageSquare, path: "/teams" },
+      { label: "Chat", icon: MessageSquare, path: "https://teams.microsoft.com/v2/" },
     ],
   },
 ]

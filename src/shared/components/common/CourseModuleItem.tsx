@@ -102,7 +102,7 @@ export default function CourseModuleItem({
                   className="gap-1.5 h-7 px-2"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span className="text-xs">Go to link</span>
+                  <span className="text-m">Go to training</span>
                 </Button>
               </a>
             )}

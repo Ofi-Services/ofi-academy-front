@@ -34,7 +34,7 @@ export default function CatalogPage() {
     }
   };
 
-  const tracks = catalogData?.results || [];
+  const tracks = catalogData || [];
 
   const filteredTracks = useMemo(() => {
     return tracks.filter((t: TrainingTrack) => 

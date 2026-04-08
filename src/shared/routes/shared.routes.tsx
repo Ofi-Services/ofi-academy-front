@@ -4,6 +4,7 @@ import ProtectedRoute from "@/core/routes/ProtectedRoute"
 import AuthenticatedLayout from "../components/common/AuthenticatedLayout"
 import CoursesDashboard from "../components/common/CoursesDashboard"
 import WorkInProgress from "../components/common/WorkInProgressPage"
+import CatalogPage from "@/modules/consultant/pages/CatalogPage"
 
 // Shared pages (accessible by all authenticated users)
 const Support = () => <WorkInProgress />
@@ -21,6 +22,16 @@ export const sharedRoutes = (
         <ProtectedRoute>
           <AuthenticatedLayout>
             <CoursesDashboard />
+          </AuthenticatedLayout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/catalog"
+      element={
+        <ProtectedRoute>
+          <AuthenticatedLayout>
+            <CatalogPage />
           </AuthenticatedLayout>
         </ProtectedRoute>
       }

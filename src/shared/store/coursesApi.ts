@@ -27,6 +27,7 @@ export interface TrainingTrack {
   duration?: string
   thumbnail?: string
   courses?: Course[]
+  name?: string // Backend might use 'name' instead of 'title'
 }
 
 export interface PaginatedResponse<T> {
@@ -96,8 +97,17 @@ export const coursesApi = createApi({
   tagTypes: ['Courses', 'Progress', 'Schedule'],
   endpoints: (builder) => ({
     // Get all courses (Catalog)
-    getAllCourses: builder.query<PaginatedResponse<TrainingTrack>, void>({
+    getAllCourses: builder.query<TrainingTrack[], void>({
       query: () => '/training-tracks/all/',
+      transformResponse: (response: any) => {
+        console.log('[getAllCourses] Raw response:', response)
+        const results = response.results || (Array.isArray(response) ? response : []);
+        // Normalize name/title
+        return results.map((t: any) => ({
+          ...t,
+          title: t.title || t.name // Ensure title is populated
+        }));
+      },
       providesTags: ['Courses'],
     }),
 

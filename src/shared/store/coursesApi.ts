@@ -29,6 +29,13 @@ export interface TrainingTrack {
   courses?: Course[]
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface UserProgress {
   userId: string
   totalCourses: number
@@ -88,9 +95,9 @@ export const coursesApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Courses', 'Progress', 'Schedule'],
   endpoints: (builder) => ({
-    // Get all courses
-    getAllCourses: builder.query<TrainingTrack[], void>({
-      query: () => '/courses',
+    // Get all courses (Catalog)
+    getAllCourses: builder.query<PaginatedResponse<TrainingTrack>, void>({
+      query: () => '/training-tracks/all/',
       providesTags: ['Courses'],
     }),
 
@@ -123,9 +130,9 @@ export const coursesApi = createApi({
     }),
 
     // Enroll in course
-    enrollInCourse: builder.mutation<TrainingTrack, string>({
-      query: (courseId) => ({
-        url: `/courses/${courseId}/enroll`,
+    enrollInCourse: builder.mutation<number, string>({
+      query: (trackId) => ({
+        url: `/training-tracks/${trackId}/enroll/`,
         method: 'POST',
       }),
       invalidatesTags: ['Courses', 'Progress'],

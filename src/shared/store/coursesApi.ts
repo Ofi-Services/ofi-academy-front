@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { API_CONFIG } from '@/core/api/apiClient'
 
 // Types
 export interface Course {
@@ -60,14 +61,14 @@ export interface Schedule {
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'https://ofiacademy.api.sofiatechnology.ai/api',
+  baseUrl: `${API_CONFIG.BASE_URL}`,
   prepareHeaders: (headers) => {
     const token = localStorage.getItem('ofi_token')
-    
+
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
     }
-    
+
     return headers
   },
 })
@@ -79,14 +80,14 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions)
-  
+
   // If response is 401 (unauthorized), logout
   if (result.error && result.error.status === 401) {
     localStorage.removeItem('ofi_user')
     localStorage.removeItem('ofi_token')
     window.location.href = '/login'
   }
-  
+
   return result
 }
 
@@ -114,9 +115,10 @@ export const coursesApi = createApi({
     // Get enrolled courses only
     getEnrolledCourses: builder.query<TrainingTrack[], void>({
       query: () => '/training-tracks/',
-      transformResponse: (response: TrainingTrack[]) => {
+      transformResponse: (response: any) => {
         console.log('[getEnrolledCourses] Raw response:', response)
-        return response
+        if (response && response.results) return response.results;
+        return Array.isArray(response) ? response : [];
       },
       providesTags: ['Courses'],
     }),

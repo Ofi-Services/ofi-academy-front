@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { API_CONFIG } from '@/core/api/apiClient'
 
 // Types
 export interface Course {
@@ -27,6 +28,14 @@ export interface TrainingTrack {
   duration?: string
   thumbnail?: string
   courses?: Course[]
+  name?: string // Backend might use 'name' instead of 'title'
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 export interface UserProgress {
@@ -52,14 +61,14 @@ export interface Schedule {
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'https://ofiacademy.api.sofiatechnology.ai/api',
+  baseUrl: `${API_CONFIG.BASE_URL}`,
   prepareHeaders: (headers) => {
     const token = localStorage.getItem('ofi_token')
-    
+
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
     }
-    
+
     return headers
   },
 })
@@ -71,14 +80,14 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions)
-  
+
   // If response is 401 (unauthorized), logout
   if (result.error && result.error.status === 401) {
     localStorage.removeItem('ofi_user')
     localStorage.removeItem('ofi_token')
     window.location.href = '/login'
   }
-  
+
   return result
 }
 
@@ -88,18 +97,28 @@ export const coursesApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Courses', 'Progress', 'Schedule'],
   endpoints: (builder) => ({
-    // Get all courses
+    // Get all courses (Catalog)
     getAllCourses: builder.query<TrainingTrack[], void>({
-      query: () => '/courses',
+      query: () => '/training-tracks/all/',
+      transformResponse: (response: any) => {
+        console.log('[getAllCourses] Raw response:', response)
+        const results = response.results || (Array.isArray(response) ? response : []);
+        // Normalize name/title
+        return results.map((t: any) => ({
+          ...t,
+          title: t.title || t.name // Ensure title is populated
+        }));
+      },
       providesTags: ['Courses'],
     }),
 
     // Get enrolled courses only
     getEnrolledCourses: builder.query<TrainingTrack[], void>({
       query: () => '/training-tracks/',
-      transformResponse: (response: TrainingTrack[]) => {
+      transformResponse: (response: any) => {
         console.log('[getEnrolledCourses] Raw response:', response)
-        return response
+        if (response && response.results) return response.results;
+        return Array.isArray(response) ? response : [];
       },
       providesTags: ['Courses'],
     }),
@@ -123,9 +142,9 @@ export const coursesApi = createApi({
     }),
 
     // Enroll in course
-    enrollInCourse: builder.mutation<TrainingTrack, string>({
-      query: (courseId) => ({
-        url: `/courses/${courseId}/enroll`,
+    enrollInCourse: builder.mutation<number, string>({
+      query: (trackId) => ({
+        url: `/training-tracks/${trackId}/enroll/`,
         method: 'POST',
       }),
       invalidatesTags: ['Courses', 'Progress'],

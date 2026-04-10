@@ -144,6 +144,15 @@ export const leaderApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    
+    // Export talents report as CSV
+    exportTalentsReport: builder.query<Blob, void>({
+      query: () => ({
+        url: "/leader/talents/export/",
+        responseHandler: (response) => response.blob(),
+        cache: "no-cache",
+      }),
+    }),
   }),
 })
 
@@ -157,4 +166,5 @@ export const {
   useGetTrainingTrackDetailQuery,
   useAssignCourseMutation,
   useSendTeamMessageMutation,
+  useLazyExportTalentsReportQuery,
 } = leaderApi

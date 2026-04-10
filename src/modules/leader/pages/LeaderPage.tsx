@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, FileText } from "lucide-react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
 import StatsCard from "@/shared/components/common/StatsCard"
 import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
 import { useDataFilter } from "@/shared/hooks/useDataFilter"
-import { useGetTeamMembersQuery } from "../store/leaderApi"
+import { useGetTeamMembersQuery, useLazyExportTalentsReportQuery } from "../store/leaderApi"
 import TrainingTracksDialog from "../components/TrainingTracksDialog"
 import TeamMemberCard from "../components/TeamMemberCard"
 // 1. Import useToast
@@ -17,62 +17,48 @@ export default function LeaderDashboard() {
   // 2. Initialize toast hook
   const { toast } = useToast()
 
-  // --- Mock HTTP Request Function ---
-  // 3. Function to simulate an API call for generating the report
-  const generateReport = (): Promise<boolean> => {
-    // 90% chance of success
-    const isSuccess = Math.random() < 0.9
+  const [triggerExport, { isLoading: isExporting }] = useLazyExportTalentsReportQuery()
 
-    // Simulate network latency
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(isSuccess)
-      }, 1500) // 1.5s delay
-    })
-  }
-
-  // 4. Handler for the button click
   const handleGenerateReport = async () => {
-    const loadingToast = toast({
+    toast({
       title: "Generating Report...",
       description: "Please wait while your team overview report is being prepared.",
       variant: "default",
-      duration: 999999, // Keep open until updated
     })
 
     try {
-      const success = await generateReport()
+      const response = await triggerExport().unwrap()
 
-      if (success) {
-        loadingToast.update({
-          title: "✅ Report Generated!",
-          description: "The Team Overview report has been successfully created and is ready for download.",
-          variant: "default",
-          duration: 5000,
-          id: '', // Allow it to auto-remove
-        })
-      } else {
-        loadingToast.update({
-          title: "❌ Report Generation Failed",
-          description: "An unexpected error occurred while creating the report. Please try again.",
-          variant: "destructive",
-          duration: 5000,
-          id: 'undefined', // Allow it to auto-remove
+      // Create a temporary link for download
+      const url = window.URL.createObjectURL(response)
+      const link = document.createElement("a")
+      link.href = url
 
-        })
-      }
+      // Suggested filename
+      const date = new Date().toISOString().slice(0, 10)
+      link.setAttribute("download", `talents_report_${date}.csv`)
+
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      link.remove()
+      window.URL.revokeObjectURL(url)
+
+      toast({
+        title: "✅ Report Generated",
+        description: "The talents report has been successfully downloaded.",
+        variant: "default",
+      })
     } catch (error) {
-      loadingToast.update({
-        title: "❌ Network Error",
-        description: "Could not connect to the server to generate the report." + error,
+      console.error("Error exporting CSV:", error)
+      toast({
+        title: "❌ Export Failed",
+        description: "Could not generate the report. Please try again.",
         variant: "destructive",
-        duration: 5000,
-        id: 'undefined', // Allow it to auto-remove
-
       })
     }
   }
-  // --- End Mock HTTP Request Function ---
 
   // RTK Query hook
   const {
@@ -260,9 +246,11 @@ export default function LeaderDashboard() {
           <h2 className="text-xl font-semibold">Team Progress</h2>
           <Button
             onClick={handleGenerateReport}
-            variant="ghost"
+            variant="outline"
+            disabled={isExporting}
           >
-            <FileText className="mr-2 h-4 w-4" /> Generate Report
+            <Download className="mr-2 h-4 w-4" />
+            {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
         </div>
 

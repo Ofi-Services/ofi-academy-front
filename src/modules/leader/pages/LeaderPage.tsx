@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download } from "lucide-react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download, Zap } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
@@ -86,7 +86,19 @@ export default function LeaderDashboard() {
     data: teamMembers || [],
     searchFields: ["name"],
     sortField: "name",
-    itemsPerPage: 6
+    itemsPerPage: 6,
+    customFilters: useMemo(() => ({
+      performance: (member: any, value: string) => {
+        const p = member.completion_percentage || 0
+        switch (value) {
+          case "high": return p >= 75
+          case "medium": return p >= 25 && p < 75
+          case "low": return p > 0 && p < 25
+          case "none": return p === 0
+          default: return true
+        }
+      }
+    }), [])
   })
 
   // Extract unique roles
@@ -149,6 +161,18 @@ export default function LeaderDashboard() {
       options: [
         { value: "at_risk", label: "At Risk" },
         { value: "on_track", label: "On Track" }
+      ]
+    },
+    {
+      key: "performance",
+      label: "Performance",
+      placeholder: "Performance",
+      icon: Zap,
+      options: [
+        { value: "high", label: "High (> 75%)" },
+        { value: "medium", label: "Moderate (25-75%)" },
+        { value: "low", label: "Starting (< 25%)" },
+        { value: "none", label: "Not Started" }
       ]
     }
   ]

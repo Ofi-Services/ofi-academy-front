@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
-import { BookOpen, Award, TrendingUp, Monitor } from "lucide-react"
+import { BookOpen, Award, TrendingUp, Monitor, Activity } from "lucide-react"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
@@ -35,7 +35,19 @@ export default function CoursesDashboard() {
     data: courses || [],
     searchFields: ["title", "description"],
     sortField: "title",
-    itemsPerPage: 9
+    itemsPerPage: 9,
+    customFilters: useMemo(() => ({
+      progress: (course: any, value: string) => {
+        const p = course.progress_percentage || 0
+        switch (value) {
+          case "lt25": return p < 25
+          case "lt50": return p < 50
+          case "lt75": return p < 75
+          case "completed": return p === 100
+          default: return true
+        }
+      }
+    }), [])
   })
 
   // Calculate progress locally from courses data
@@ -88,6 +100,18 @@ export default function CoursesDashboard() {
       placeholder: "All Platforms",
       icon: Monitor,
       options: platforms.map(platform => ({ value: platform, label: platform }))
+    },
+    {
+      key: "progress",
+      label: "Progress",
+      placeholder: "All Progress",
+      icon: Activity,
+      options: [
+        { value: "lt25", label: "Less than 25%" },
+        { value: "lt50", label: "Less than 50%" },
+        { value: "lt75", label: "Less than 75%" },
+        { value: "completed", label: "Completed" }
+      ]
     }
   ]
 

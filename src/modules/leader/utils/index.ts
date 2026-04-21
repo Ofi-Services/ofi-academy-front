@@ -7,7 +7,7 @@ export const getStatusConfig = (status: string): StatusConfig => {
       return {
         variant: "default" as const,
         label: "Excellent",
-        className: "bg-green-500 hover:bg-green-600"
+        className: "bg-[#13608b] hover:bg-[#13608b]/90"
       }
     case "on_track":
       return {
@@ -17,9 +17,9 @@ export const getStatusConfig = (status: string): StatusConfig => {
       }
     default:
       return {
-        variant: "destructive" as const,
+        variant: "default" as const,
         label: "At Risk",
-        className: ""
+        className: "bg-[#848484] hover:bg-[#848484]/90"
       }
   }
 }

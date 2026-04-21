@@ -16,20 +16,20 @@ export default function TeamMemberStats({
     {
       label: "Completed",
       value: completedCourses,
-      color: "text-emerald-500",
-      icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+      color: "text-[#13608b]",
+      icon: <CheckCircle2 className="h-5 w-5 text-[#13608b]" />
     },
     {
       label: "In Progress",
       value: activeCourses,
-      color: "text-blue-500",
-      icon: <BookOpen className="h-5 w-5 text-blue-500" />
+      color: "text-primary",
+      icon: <BookOpen className="h-5 w-5 text-primary" />
     },
     {
       label: "Overdue",
       value: overdueCourses,
-      color: "text-red-500",
-      icon: <AlertTriangle className="h-5 w-5 text-red-500" />
+      color: "text-[#848484]",
+      icon: <AlertTriangle className="h-5 w-5 text-[#848484]" />
     }
   ]
 

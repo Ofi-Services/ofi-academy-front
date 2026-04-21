@@ -321,7 +321,7 @@ export default function CourseProgressDialog({
                       currentProgress < 50
                         ? "bg-destructive"
                         : currentProgress >= 85
-                        ? "bg-green-500"
+                        ? "bg-[#13608b]"
                         : "bg-primary"
                     }`}
                     style={{ width: `${currentProgress}%` }}

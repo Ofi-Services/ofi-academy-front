@@ -142,10 +142,10 @@ export const MonthSummary: React.FC<MonthSummaryProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-green-600 flex-shrink-0" />
+                  <CheckCircle2 className="w-3 h-3 text-[#13608b] flex-shrink-0" />
                   <span className="truncate">Courses Completed</span>
                 </span>
-                <span className="font-medium text-green-600 flex-shrink-0">
+                <span className="font-medium text-[#13608b] flex-shrink-0">
                   {summary.completedCourses}
                 </span>
               </div>

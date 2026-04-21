@@ -232,7 +232,7 @@ export default function LeaderDashboard() {
           label="Team Members"
           value={teamStats.totalMembers}
           icon={Users2}
-          color="primary"
+          color="success"
         />
         <StatsCard
           label="Average Progress"
@@ -244,7 +244,7 @@ export default function LeaderDashboard() {
           label="At Risk"
           value={teamStats.atRiskMembers}
           icon={AlertTriangle}
-          color="warning"
+          color="success"
         />
         <StatsCard
           label="Top Performers"

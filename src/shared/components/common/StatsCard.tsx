@@ -12,8 +12,8 @@ interface StatsCardProps {
 export default function StatsCard({ label, value, icon: Icon, color = "primary" }: StatsCardProps) {
   const colorClasses = {
     primary: "text-primary",
-    success: "text-green-500",
-    warning: "text-yellow-500",
+    success: "text-[#13608b]",
+    warning: "text-[#13608b]",
     danger: "text-destructive",
   }
 

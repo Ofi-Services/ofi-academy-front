@@ -6,13 +6,15 @@ interface UseDataFilterOptions<T> {
   searchFields: (keyof T)[]
   sortField: keyof T
   itemsPerPage?: number
+  customFilters?: Record<string, (item: T, value: string) => boolean>
 }
 
 export function useDataFilter<T>({
   data,
   searchFields,
   sortField,
-  itemsPerPage = 9
+  itemsPerPage = 9,
+  customFilters
 }: UseDataFilterOptions<T>) {
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<Record<string, string>>({})
@@ -32,6 +34,12 @@ export function useDataFilter<T>({
       // Dynamic filters
       const matchesFilters = Object.entries(filters).every(([key, value]) => {
         if (value === "all") return true
+        
+        // Use custom filter if provided
+        if (customFilters && customFilters[key]) {
+          return customFilters[key](item, value)
+        }
+        
         return item[key as keyof T] === value
       })
 
@@ -49,7 +57,7 @@ export function useDataFilter<T>({
     })
 
     return filtered
-  }, [data, searchTerm, filters, sortOrder, searchFields, sortField])
+  }, [data, searchTerm, filters, sortOrder, searchFields, sortField, customFilters])
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage)

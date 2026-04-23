@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useGetAllCoursesQuery, useGetEnrolledCoursesQuery, useEnrollInCourseMutation, TrainingTrack } from '@/shared/store/coursesApi';
+import { useGetAllCoursesQuery, useGetEnrolledCoursesQuery, useEnrollInCourseMutation } from '@/shared/store/coursesApi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -217,7 +217,7 @@ export default function CatalogPage() {
               >
                 Previous
               </Button>
-              
+
               <div className="flex gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button

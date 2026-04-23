@@ -225,7 +225,7 @@ const filteredTracks = useMemo(() => {
 
   const getStatusBadge = (track: TrainingTrack) => {
     if (track.is_completed) {
-      return <Badge className="bg-green-500">Completed</Badge>
+      return <Badge className="bg-[#13608b]">Completed</Badge>
     }
     if (track.is_overdue) {
       return <Badge variant="destructive">Overdue</Badge>
@@ -343,20 +343,20 @@ const filteredTracks = useMemo(() => {
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-4 pt-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-4 w-4 text-[#13608b]" />
                         <span>
                           <span className="font-semibold">{track.completed_courses}</span>
                           <span className="text-muted-foreground">/{track.total_courses}</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-blue-500" />
+                        <Calendar className="h-4 w-4 text-[#13608b]" />
                         <span className="text-muted-foreground">
                           {formatDate(track.due_date)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-orange-500" />
+                        <Clock className="h-4 w-4 text-[#13608b]" />
                         <span className="text-muted-foreground">
                           {track.is_overdue ? "Overdue" : "Active"}
                         </span>
@@ -443,7 +443,7 @@ const filteredTracks = useMemo(() => {
                                   Course {currentCourseIndex + 1} of {trackDetail.courses.length}
                                 </span>
                                 {trackDetail.courses[currentCourseIndex].completed && (
-                                  <Badge className="bg-green-500">
+                                  <Badge className="bg-[#13608b]">
                                     <CheckCircle2 className="h-3 w-3 mr-1" />
                                     Completed
                                   </Badge>
@@ -459,7 +459,7 @@ const filteredTracks = useMemo(() => {
                           <div className="space-y-3 pt-4">
                             {trackDetail.courses[currentCourseIndex].has_submission && (
                               <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                                <FileText className="h-5 w-5 text-blue-500" />
+                                <FileText className="h-5 w-5 text-[#13608b]" />
                                 <div className="flex-1">
                                   <p className="text-sm font-medium">Evidence Submitted</p>
                                   {trackDetail.courses[currentCourseIndex].submission_link && (
@@ -467,7 +467,7 @@ const filteredTracks = useMemo(() => {
                                       href={trackDetail.courses[currentCourseIndex].submission_link}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-xs text-blue-500 hover:underline"
+                                      className="text-xs text-[#13608b] hover:underline"
                                     >
                                       View Evidence
                                     </a>
@@ -477,9 +477,9 @@ const filteredTracks = useMemo(() => {
                             )}
 
                             {!trackDetail.courses[currentCourseIndex].completed && (
-                              <div className="flex items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                                <Clock className="h-5 w-5 text-orange-500" />
-                                <p className="text-sm text-orange-700 dark:text-orange-300">
+                              <div className="flex items-center gap-2 p-3 bg-[#13608b]/5 dark:bg-[#13608b]/10 rounded-lg">
+                                <Clock className="h-5 w-5 text-[#13608b]" />
+                                <p className="text-sm text-[#13608b]">
                                   Pending Completion
                                 </p>
                               </div>

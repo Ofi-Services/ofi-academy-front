@@ -340,7 +340,7 @@ const TrainingCalendar: React.FC<TrainingCalendarProps> = ({
                               </div>
                             ))}
                           {dayData.summary.completedTracks > 0 && (
-                            <div className="text-xs text-green-600 font-medium whitespace-nowrap">
+                            <div className="text-xs text-[#13608b] font-medium whitespace-nowrap">
                               ✓ {dayData.summary.completedTracks}
                             </div>
                           )}

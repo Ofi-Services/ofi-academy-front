@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, FileText } from "lucide-react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download, Zap } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
 import StatsCard from "@/shared/components/common/StatsCard"
 import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
 import { useDataFilter } from "@/shared/hooks/useDataFilter"
-import { useGetTeamMembersQuery } from "../store/leaderApi"
+import { useGetTeamMembersQuery, useLazyExportTalentsReportQuery } from "../store/leaderApi"
 import TrainingTracksDialog from "../components/TrainingTracksDialog"
 import TeamMemberCard from "../components/TeamMemberCard"
 // 1. Import useToast
@@ -17,62 +17,48 @@ export default function LeaderDashboard() {
   // 2. Initialize toast hook
   const { toast } = useToast()
 
-  // --- Mock HTTP Request Function ---
-  // 3. Function to simulate an API call for generating the report
-  const generateReport = (): Promise<boolean> => {
-    // 90% chance of success
-    const isSuccess = Math.random() < 0.9
+  const [triggerExport, { isLoading: isExporting }] = useLazyExportTalentsReportQuery()
 
-    // Simulate network latency
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(isSuccess)
-      }, 1500) // 1.5s delay
-    })
-  }
-
-  // 4. Handler for the button click
   const handleGenerateReport = async () => {
-    const loadingToast = toast({
+    toast({
       title: "Generating Report...",
       description: "Please wait while your team overview report is being prepared.",
       variant: "default",
-      duration: 999999, // Keep open until updated
     })
 
     try {
-      const success = await generateReport()
+      const response = await triggerExport().unwrap()
 
-      if (success) {
-        loadingToast.update({
-          title: "✅ Report Generated!",
-          description: "The Team Overview report has been successfully created and is ready for download.",
-          variant: "default",
-          duration: 5000,
-          id: '', // Allow it to auto-remove
-        })
-      } else {
-        loadingToast.update({
-          title: "❌ Report Generation Failed",
-          description: "An unexpected error occurred while creating the report. Please try again.",
-          variant: "destructive",
-          duration: 5000,
-          id: 'undefined', // Allow it to auto-remove
+      // Create a temporary link for download
+      const url = window.URL.createObjectURL(response)
+      const link = document.createElement("a")
+      link.href = url
 
-        })
-      }
+      // Suggested filename
+      const date = new Date().toISOString().slice(0, 10)
+      link.setAttribute("download", `talents_report_${date}.csv`)
+
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      link.remove()
+      window.URL.revokeObjectURL(url)
+
+      toast({
+        title: "✅ Report Generated",
+        description: "The talents report has been successfully downloaded.",
+        variant: "default",
+      })
     } catch (error) {
-      loadingToast.update({
-        title: "❌ Network Error",
-        description: "Could not connect to the server to generate the report." + error,
+      console.error("Error exporting CSV:", error)
+      toast({
+        title: "❌ Export Failed",
+        description: "Could not generate the report. Please try again.",
         variant: "destructive",
-        duration: 5000,
-        id: 'undefined', // Allow it to auto-remove
-
       })
     }
   }
-  // --- End Mock HTTP Request Function ---
 
   // RTK Query hook
   const {
@@ -100,7 +86,19 @@ export default function LeaderDashboard() {
     data: teamMembers || [],
     searchFields: ["name"],
     sortField: "name",
-    itemsPerPage: 6
+    itemsPerPage: 6,
+    customFilters: useMemo(() => ({
+      performance: (member: any, value: string) => {
+        const p = member.completion_percentage || 0
+        switch (value) {
+          case "high": return p >= 75
+          case "medium": return p >= 25 && p < 75
+          case "low": return p > 0 && p < 25
+          case "none": return p === 0
+          default: return true
+        }
+      }
+    }), [])
   })
 
   // Extract unique roles
@@ -163,6 +161,18 @@ export default function LeaderDashboard() {
       options: [
         { value: "at_risk", label: "At Risk" },
         { value: "on_track", label: "On Track" }
+      ]
+    },
+    {
+      key: "performance",
+      label: "Performance",
+      placeholder: "Performance",
+      icon: Zap,
+      options: [
+        { value: "high", label: "High (> 75%)" },
+        { value: "medium", label: "Moderate (25-75%)" },
+        { value: "low", label: "Starting (< 25%)" },
+        { value: "none", label: "Not Started" }
       ]
     }
   ]
@@ -232,7 +242,7 @@ export default function LeaderDashboard() {
           label="Team Members"
           value={teamStats.totalMembers}
           icon={Users2}
-          color="primary"
+          color="success"
         />
         <StatsCard
           label="Average Progress"
@@ -244,7 +254,7 @@ export default function LeaderDashboard() {
           label="At Risk"
           value={teamStats.atRiskMembers}
           icon={AlertTriangle}
-          color="warning"
+          color="success"
         />
         <StatsCard
           label="Top Performers"
@@ -260,9 +270,11 @@ export default function LeaderDashboard() {
           <h2 className="text-xl font-semibold">Team Progress</h2>
           <Button
             onClick={handleGenerateReport}
-            variant="ghost"
+            variant="outline"
+            disabled={isExporting}
           >
-            <FileText className="mr-2 h-4 w-4" /> Generate Report
+            <Download className="mr-2 h-4 w-4" />
+            {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
         </div>
 

@@ -1,4 +1,5 @@
 
+import { LogOut } from "lucide-react"
 import { NavSection } from "@/shared/config/navigation.config"
 import SidebarItem from "./SidebarItem"
 import { useTheme } from "@/shared/hooks/useTheme"
@@ -47,9 +48,10 @@ export default function Sidebar({ navigation, onLogout }: SidebarProps) {
       <div className="mt-auto p-4 border-t border-border">
         <button
           onClick={onLogout}
-          className="w-full px-4 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm"
+          className="flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors text-sm font-medium"
         >
-          Logout
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
         </button>
       </div>
     </aside>

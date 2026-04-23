@@ -21,8 +21,8 @@ interface CourseCardProps {
 // Mapa de colores y gradientes por categoría
 const categoryStyles: Record<string, { gradient: string; badgeClass: string }> = {
   "Frontend Development": {
-    gradient: "bg-gradient-to-br from-blue-500 to-cyan-500",
-    badgeClass: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20"
+    gradient: "bg-gradient-to-br from-[#13608b] to-cyan-600",
+    badgeClass: "bg-[#13608b]/10 text-[#13608b] dark:text-[#13608b]/80 border-[#13608b]/20"
   },
   "Backend Development": {
     gradient: "bg-gradient-to-br from-green-500 to-emerald-600",
@@ -53,8 +53,8 @@ const categoryStyles: Record<string, { gradient: string; badgeClass: string }> =
     badgeClass: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20"
   },
   "default": {
-    gradient: "bg-gradient-to-br from-gray-500 to-slate-600",
-    badgeClass: "bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20"
+    gradient: "bg-gradient-to-br from-[#848484] to-[#848484]/80",
+    badgeClass: "bg-[#848484]/10 text-[#848484] dark:text-[#848484]/80 border-[#848484]/20"
   }
 }
 
@@ -75,15 +75,15 @@ export default function CourseCard({
   let progressColor = "bg-destructive"
   let progressLabel = "Needs attention"
   
-  if (progress < 50) {
-    progressColor = "bg-destructive"
+  if (progress < 25) {
+    progressColor = "bg-[#848484]"
     progressLabel = "Needs attention"
-  } else if (progress >= 85) {
-    progressColor = "bg-green-500"
-    progressLabel = "Almost there!"
-  } else if (progress >= 60) {
+  } else if (progress === 100) {
+    progressColor = "bg-[#13608b]"
+    progressLabel = "Completed!"
+  } else {
     progressColor = "bg-primary"
-    progressLabel = "Good progress"
+    progressLabel = progress >= 85 ? "Almost there!" : "Good progress"
   }
 
   // Obtener el estilo de la categoría
@@ -153,8 +153,8 @@ export default function CourseCard({
           {/* Progress Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{progressLabel}</span>
-              <span className="text-lg font-bold text-foreground">{progress}%</span>
+              <span className="text-xs font-medium text-white">{progressLabel}</span>
+              <span className="text-lg font-bold text-white">{progress}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div

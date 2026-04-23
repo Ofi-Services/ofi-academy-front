@@ -38,9 +38,9 @@ export default function FilterControls({
   className = ""
 }: FilterControlsProps) {
   return (
-    <div className={`flex flex-row gap-4 ${className}`}>
+    <div className={`flex flex-col lg:flex-row gap-4 ${className}`}>
       {/* Search Input */}
-      <div className="relative flex-1 max-w-md">
+      <div className="relative flex-1 w-full max-w-2xl">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
           type="text"
@@ -52,7 +52,7 @@ export default function FilterControls({
       </div>
 
       {/* Filters Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         {filters.map((filter) => {
           const Icon = filter.icon
           
@@ -62,7 +62,7 @@ export default function FilterControls({
               value={filterValues[filter.key] || "all"}
               onValueChange={(value) => onFilterChange(filter.key, value)}
             >
-              <SelectTrigger className="w-full sm:w-52">
+              <SelectTrigger className="w-full sm:w-44">
                 <div className="flex items-center gap-2">
                   {Icon && <Icon className="w-4 h-4" />}
                   <SelectValue placeholder={filter.placeholder} />

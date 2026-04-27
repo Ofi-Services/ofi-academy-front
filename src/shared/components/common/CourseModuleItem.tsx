@@ -21,6 +21,7 @@ interface ModuleItemProps {
   onFileRemove: (moduleId: string, index: number) => void
   link?: string // New prop for the link
   disableUpload?: boolean // Disable upload when course is 100% complete
+  onErrorMessage?: (message: string) => void
 }
 
 export default function CourseModuleItem({
@@ -32,6 +33,7 @@ export default function CourseModuleItem({
   onFileRemove,
   link,
   disableUpload = false,
+  onErrorMessage,
 }: ModuleItemProps) {
   const { toast } = useToast()
   const hasFiles = files.length > 0
@@ -47,11 +49,9 @@ export default function CourseModuleItem({
     )
 
     if (imageFiles.length === 0) {
-      toast({
-        title: "⚠️ Invalid file",
-        description: "Only image files are allowed (JPG, PNG, etc.)",
-        variant: "destructive",
-      })
+      if (onErrorMessage) {
+        onErrorMessage("⚠️ Invalid file - Only image files are allowed (JPG, PNG, etc.)")
+      }
       e.target.value = "" // Reset input
       return
     }
@@ -59,11 +59,9 @@ export default function CourseModuleItem({
     // Check file size (max 5MB per file)
     const oversizedFiles = imageFiles.filter((file) => file.size > 5 * 1024 * 1024)
     if (oversizedFiles.length > 0) {
-      toast({
-        title: "⚠️ File too large",
-        description: "Images must be smaller than 5MB",
-        variant: "destructive",
-      })
+      if (onErrorMessage) {
+        onErrorMessage("⚠️ File too large - Images must be smaller than 5MB")
+      }
       e.target.value = "" // Reset input
       return
     }
@@ -169,7 +167,7 @@ export default function CourseModuleItem({
                 <button
                   type="button"
                   onClick={() => onFileRemove(module.id, index)}
-                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 transition-opacity"
+                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 transition-opacity z-10"
                   aria-label="Remove image"
                 >
                   <X className="w-3 h-3" />

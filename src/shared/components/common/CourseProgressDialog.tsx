@@ -48,6 +48,7 @@ export default function CourseProgressDialog({
   const [previewUrls, setPreviewUrls] = useState<{ [moduleId: string]: string[] }>({})
   const [initiallyCompletedModules, setInitiallyCompletedModules] = useState<Set<string>>(new Set())
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // RTK Query hooks
   const { data: course, isLoading, error } = useGetCourseDetailsQuery(courseId, {
@@ -77,6 +78,7 @@ export default function CourseProgressDialog({
       setModuleFiles({})
       setModuleNotes({})
       setSuccessMessage(null)
+      setErrorMessage(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -229,6 +231,7 @@ export default function CourseProgressDialog({
       setPreviewUrls({})
       setModuleNotes({})
       setSuccessMessage(null)
+      setErrorMessage(null)
 
       onOpenChange(false)
     } catch (error) {
@@ -345,6 +348,19 @@ export default function CourseProgressDialog({
               </div>
             )}
 
+            {errorMessage && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+                <div className="text-sm font-medium text-red-800">{errorMessage}</div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="text-red-600 hover:text-red-800"
+                  aria-label="Close message"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <Separator />
 
             {/* Modules List */}
@@ -371,6 +387,7 @@ export default function CourseProgressDialog({
                          onFileRemove={handleFileRemove}
                          link={module.link}
                          disableUpload={currentProgress === 100}
+                         onErrorMessage={setErrorMessage}
                        />
                      ))
                   ) : (

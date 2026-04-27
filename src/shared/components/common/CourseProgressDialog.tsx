@@ -347,19 +347,20 @@ export default function CourseProgressDialog({
               <ScrollArea className="h-[350px] pr-4">
                 <div className="space-y-3">
                   {sortedModules.length > 0 ? (
-                    sortedModules.map((module) => (
-                      <CourseModuleItem
-                        key={module.id}
-                        module={module}
-                        isCompleted={selectedModules.has(module.id)}
-                        onToggle={handleModuleToggle}
-                        files={moduleFiles[module.id] || []}
-                        previewUrls={previewUrls[module.id] || []}
-                        onFilesChange={handleFilesChange}
-                        onFileRemove={handleFileRemove}
-                        link={module.link}
-                      />
-                    ))
+                     sortedModules.map((module) => (
+                       <CourseModuleItem
+                         key={module.id}
+                         module={module}
+                         isCompleted={selectedModules.has(module.id)}
+                         onToggle={handleModuleToggle}
+                         files={moduleFiles[module.id] || []}
+                         previewUrls={previewUrls[module.id] || []}
+                         onFilesChange={handleFilesChange}
+                         onFileRemove={handleFileRemove}
+                         link={module.link}
+                         disableUpload={currentProgress === 100}
+                       />
+                     ))
                   ) : (
                     <Alert>
                       <AlertCircle className="h-4 w-4" />

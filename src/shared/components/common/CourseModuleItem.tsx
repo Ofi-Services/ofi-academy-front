@@ -20,6 +20,7 @@ interface ModuleItemProps {
   onFilesChange: (moduleId: string, files: FileList | null) => void
   onFileRemove: (moduleId: string, index: number) => void
   link?: string // New prop for the link
+  disableUpload?: boolean // Disable upload when course is 100% complete
 }
 
 export default function CourseModuleItem({
@@ -30,6 +31,7 @@ export default function CourseModuleItem({
   onFilesChange,
   onFileRemove,
   link,
+  disableUpload = false,
 }: ModuleItemProps) {
   const { toast } = useToast()
   const hasFiles = files.length > 0
@@ -138,7 +140,7 @@ export default function CourseModuleItem({
             size="sm"
             onClick={() => document.getElementById(`file-${module.id}`)?.click()}
             className="gap-2"
-            disabled={isCompleted}
+            disabled={isCompleted || disableUpload}
           >
             <Upload className="w-4 h-4" />
             Upload Photos

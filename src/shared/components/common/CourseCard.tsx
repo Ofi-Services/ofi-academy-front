@@ -153,8 +153,8 @@ export default function CourseCard({
           {/* Progress Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white">{progressLabel}</span>
-              <span className="text-lg font-bold text-white">{progress}%</span>
+              <span className={`text-xs font-medium ${progress === 100 ? 'text-black' : 'text-white'}`}>{progressLabel}</span>
+              <span className={`text-lg font-bold ${progress === 100 ? 'text-black' : 'text-white'}`}>{progress}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div

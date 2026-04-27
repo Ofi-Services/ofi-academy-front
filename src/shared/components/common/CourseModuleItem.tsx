@@ -138,6 +138,7 @@ export default function CourseModuleItem({
             size="sm"
             onClick={() => document.getElementById(`file-${module.id}`)?.click()}
             className="gap-2"
+            disabled={isCompleted}
           >
             <Upload className="w-4 h-4" />
             Upload Photos

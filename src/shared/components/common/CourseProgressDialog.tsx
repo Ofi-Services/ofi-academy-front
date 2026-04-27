@@ -12,7 +12,7 @@ import { Label } from "@/shared/components/ui/label"
 import { ScrollArea } from "@/shared/components/ui/scroll-area"
 import { Separator } from "@/shared/components/ui/separator"
 import { Badge } from "@/shared/components/ui/badge"
-import { Clock, BookOpen, AlertCircle } from "lucide-react"
+import { Clock, BookOpen, AlertCircle, X } from "lucide-react"
 import {
   useGetCourseDetailsQuery,
   useUpdateCourseProgressMutation,
@@ -47,6 +47,7 @@ export default function CourseProgressDialog({
   const [moduleNotes, setModuleNotes] = useState<ModuleNotes>({})
   const [previewUrls, setPreviewUrls] = useState<{ [moduleId: string]: string[] }>({})
   const [initiallyCompletedModules, setInitiallyCompletedModules] = useState<Set<string>>(new Set())
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // RTK Query hooks
   const { data: course, isLoading, error } = useGetCourseDetailsQuery(courseId, {
@@ -75,6 +76,7 @@ export default function CourseProgressDialog({
       setPreviewUrls({})
       setModuleFiles({})
       setModuleNotes({})
+      setSuccessMessage(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -137,11 +139,7 @@ export default function CourseProgressDialog({
       return newSet
     })
 
-    toast({
-      title: "✅ Image(s) added",
-      description: `${imageFiles.length} image(s) loaded for the module`,
-      variant: "default",
-    })
+    setSuccessMessage(`✅ Image(s) added - ${imageFiles.length} image(s) loaded for the module`)
   }
 
   const handleFileRemove = (moduleId: string, index: number) => {
@@ -230,6 +228,7 @@ export default function CourseProgressDialog({
       setModuleFiles({})
       setPreviewUrls({})
       setModuleNotes({})
+      setSuccessMessage(null)
 
       onOpenChange(false)
     } catch (error) {
@@ -332,6 +331,19 @@ export default function CourseProgressDialog({
                 </div>
               </div>
             </div>
+
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+                <div className="text-sm font-medium text-green-800">{successMessage}</div>
+                <button
+                  onClick={() => setSuccessMessage(null)}
+                  className="text-green-600 hover:text-green-800"
+                  aria-label="Close message"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             <Separator />
 

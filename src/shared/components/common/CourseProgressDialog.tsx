@@ -335,7 +335,7 @@ export default function CourseProgressDialog({
             <Separator />
 
             {/* Modules List */}
-            <div className="space-y-2 flex-1 min-h-0">
+            <div className="space-y-2 flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between">
                 <Label className="text-base font-semibold"> Training Track Courses</Label>
                 <span className="text-sm text-muted-foreground">
@@ -343,7 +343,7 @@ export default function CourseProgressDialog({
                 </span>
               </div>
 
-              <ScrollArea className="h-[350px] pr-4">
+              <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-3">
                   {sortedModules.length > 0 ? (
                     sortedModules.map((module) => (

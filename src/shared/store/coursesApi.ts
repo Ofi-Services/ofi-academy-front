@@ -12,6 +12,8 @@ export interface Course {
   order: number
   link?: string
   due_date: Date | null
+  has_submission?: boolean
+  submission_link?: string
 }
 
 export interface TrainingTrack {
@@ -196,6 +198,19 @@ export const coursesApi = createApi({
         ]
       },
     }),
+
+    // Delete a course submission
+    deleteCourseSubmission: builder.mutation<void, { trackId: string; courseId: string }>({
+      query: ({ trackId, courseId }) => ({
+        url: `/training-tracks/${trackId}/courses/${courseId}/submission/`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { trackId }) => [
+        { type: 'Courses', id: trackId },
+        'Courses',
+        'Progress',
+      ],
+    }),
   }),
 })
 
@@ -208,4 +223,5 @@ export const {
   useGetScheduleQuery,
   useEnrollInCourseMutation,
   useUpdateCourseProgressMutation,
+  useDeleteCourseSubmissionMutation,
 } = coursesApi

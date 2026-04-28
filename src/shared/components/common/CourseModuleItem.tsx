@@ -5,11 +5,11 @@ import {
   Clock,
   Upload,
   X,
-  Image as ImageIcon,
   ExternalLink,
+  Trash2,
 } from "lucide-react"
 import { useToast } from "@/shared/hooks/use-toast"
-import { Course } from "@/shared/store/coursesApi"
+import { Course, useDeleteCourseSubmissionMutation } from "@/shared/store/coursesApi"
 
 interface ModuleItemProps {
   module: Course
@@ -20,6 +20,7 @@ interface ModuleItemProps {
   onFilesChange: (moduleId: string, files: FileList | null) => void
   onFileRemove: (moduleId: string, index: number) => void
   link?: string // New prop for the link
+  trackId: string // Track ID to delete submission
 }
 
 export default function CourseModuleItem({
@@ -30,9 +31,28 @@ export default function CourseModuleItem({
   onFilesChange,
   onFileRemove,
   link,
+  trackId,
 }: ModuleItemProps) {
   const { toast } = useToast()
   const hasFiles = files.length > 0
+  const [deleteSubmission, { isLoading: isDeleting }] = useDeleteCourseSubmissionMutation()
+
+  const handleDeleteSubmission = async () => {
+    try {
+      await deleteSubmission({ trackId, courseId: module.id }).unwrap()
+      toast({
+        title: "✅ Evidence deleted",
+        description: "You can now upload a new image.",
+        variant: "default",
+      })
+    } catch {
+      toast({
+        title: "❌ Error deleting evidence",
+        description: "There was a problem deleting your evidence. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files
@@ -121,66 +141,95 @@ export default function CourseModuleItem({
         </div>
       </div>
 
-      {/* File Upload Section */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <input
-            type="file"
-            id={`file-${module.id}`}
-            accept="image/*"
-            multiple
-            onChange={handleFileInputChange}
-            className="hidden"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => document.getElementById(`file-${module.id}`)?.click()}
-            className="gap-2"
-          >
-            <Upload className="w-4 h-4" />
-            Upload Photos
-          </Button>
-          {hasFiles && (
-            <Badge variant="secondary" className="gap-1">
-              <ImageIcon className="w-3 h-3" />
-              {files.length}
-            </Badge>
-          )}
-        </div>
-
-        {/* Image Previews */}
-        {previewUrls.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {previewUrls.map((url, index) => (
-              <div
-                key={index}
-                className="relative group w-20 h-20 rounded-md overflow-hidden border border-border"
-              >
+      {/* File Upload Section or Submitted Evidence */}
+      {module.has_submission ? (
+        <div className="space-y-2">
+          <Badge variant="default" className="mb-2">
+            Evidence Submitted
+          </Badge>
+          {module.submission_link && (
+            <div className="flex gap-2">
+              <div className="relative group w-32 h-32 rounded-md overflow-hidden border border-border">
                 <img
-                  src={url}
-                  alt={`Preview ${index + 1}`}
+                  src={module.submission_link}
+                  alt="Submitted evidence"
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
-                  onClick={() => onFileRemove(module.id, index)}
-                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Remove image"
+                  onClick={handleDeleteSubmission}
+                  disabled={isDeleting}
+                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                  aria-label="Delete evidence"
                 >
-                  <X className="w-3 h-3" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {files[index]?.name.length > 15
-                    ? `${files[index]?.name.substring(0, 12)}...`
-                    : files[index]?.name}
+                  {isDeleting ? "Deleting..." : "Delete Image"}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {!hasFiles && (
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                id={`file-${module.id}`}
+                accept="image/*"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById(`file-${module.id}`)?.click()}
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Photo
+              </Button>
+            </div>
+          )}
+
+          {/* Image Previews */}
+          {previewUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {previewUrls.map((url, index) => (
+                <div
+                  key={index}
+                  className="relative group w-20 h-20 rounded-md overflow-hidden border border-border"
+                >
+                  <img
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFileRemove(module.id, index);
+                    }}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Remove image"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {files[index]?.name.length > 15
+                      ? `${files[index]?.name.substring(0, 12)}...`
+                      : files[index]?.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

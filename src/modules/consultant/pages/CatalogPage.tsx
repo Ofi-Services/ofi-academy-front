@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useGetAllCoursesQuery, useGetEnrolledCoursesQuery, useEnrollInCourseMutation } from '@/shared/store/coursesApi';
+import { useMemo, useState } from 'react';
+import { useGetAllCoursesQuery, useGetEnrolledCoursesQuery, useEnrollInCourseMutation, useGetCourseDetailsQuery } from '@/shared/store/coursesApi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -8,15 +8,26 @@ import { Loader2, User, Monitor, AlertCircle } from 'lucide-react';
 import FilterControls, { FilterConfig } from '@/shared/components/common/FilterControls';
 import { useDataFilter } from '@/shared/hooks/useDataFilter';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
+import { TrainingTrack } from '@/shared/store/coursesApi';
+import { BookOpen } from 'lucide-react';
 
 export default function CatalogPage() {
   const { data: rawTracks, isLoading: isLoadingCatalog, refetch: refetchCatalog, error: catalogError } = useGetAllCoursesQuery();
   const { data: enrolledTracks = [], isLoading: isLoadingEnrolled } = useGetEnrolledCoursesQuery();
   const [enrollInCourse, { isLoading: isEnrolling }] = useEnrollInCourseMutation();
+  const [selectedTrack, setSelectedTrack] = useState<TrainingTrack | null>(null);
 
   const enrolledIds = useMemo(() => {
     return new Set(enrolledTracks.map(t => t.id));
   }, [enrolledTracks]);
+  
+  const { data: trackDetails, isFetching: isFetchingDetails } = useGetCourseDetailsQuery(selectedTrack?.id ?? '', { skip: !selectedTrack });
+  
+  // Only use trackDetails if it matches the current selection to avoid showing stale data
+  const displayTrack = (trackDetails && selectedTrack && trackDetails.id === selectedTrack.id) 
+    ? trackDetails 
+    : selectedTrack;
 
   // Data filtering hook
   const {
@@ -148,7 +159,11 @@ export default function CatalogPage() {
               const isEnrolled = enrolledIds.has(track.id);
 
               return (
-                <Card key={track.id} className="flex flex-col h-full hover:shadow-md transition-shadow">
+                <Card
+                  key={track.id}
+                  className="flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setSelectedTrack(track)}
+                >
                   <CardHeader>
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
@@ -188,7 +203,10 @@ export default function CatalogPage() {
                     ) : (
                       <Button
                         className="w-full bg-primary hover:bg-primary/90"
-                        onClick={() => handleEnroll(track.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEnroll(track.id);
+                        }}
                         disabled={isEnrolling}
                       >
                         {isEnrolling ? (
@@ -242,6 +260,84 @@ export default function CatalogPage() {
           )}
         </>
       )}
+      {/* Track Details Modal */}
+      <Dialog open={!!selectedTrack} onOpenChange={(open) => !open && setSelectedTrack(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          {displayTrack && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline" className="text-xs">
+                    {displayTrack.platform || 'General'}
+                  </Badge>
+                  {displayTrack.category && (
+                    <Badge variant="outline" className="text-xs">
+                      {displayTrack.category}
+                    </Badge>
+                  )}
+                </div>
+                <DialogTitle className="text-2xl">{displayTrack.title || displayTrack.name}</DialogTitle>
+                <DialogDescription>
+                  {displayTrack.description || 'Enhance your professional skills with this specialized training track.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  <BookOpen className="w-5 h-5" />
+                  <h3>Courses in this track</h3>
+                </div>
+
+                <div className="rounded-xl overflow-hidden border border-gray-100">
+                  {isFetchingDetails ? (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-3 bg-gray-50/50">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground animate-pulse">Loading courses...</p>
+                    </div>
+                  ) : displayTrack?.courses && displayTrack.courses.length > 0 ? (
+                    <div className="divide-y divide-gray-200">
+                      {displayTrack.courses.map((course, index) => (
+                        <div key={course.id || index} className="p-4 flex items-start gap-4 bg-gray-50/80">
+                          <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-200 text-gray-600 text-xs font-bold mt-0.5">
+                            {index + 1}
+                          </span>
+                          <div className="space-y-0.5">
+                            <p className="font-semibold text-gray-900">{course.title}</p>
+                            {course.duration && (
+                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                                <span>•</span> {course.duration}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-10 text-center text-muted-foreground italic bg-gray-50/30">
+                      No course details available for this track.
+                    </div>
+                  )}
+                </div>
+
+                {!enrolledIds.has(displayTrack.id) && (
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      onClick={() => {
+                        handleEnroll(displayTrack.id);
+                        setSelectedTrack(null);
+                      }}
+                      disabled={isEnrolling}
+                      className="w-full sm:w-auto"
+                    >
+                      Enroll Now
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

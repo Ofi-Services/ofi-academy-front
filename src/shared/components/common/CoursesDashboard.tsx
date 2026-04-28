@@ -10,7 +10,7 @@ import { Button } from "@/shared/components/ui/button"
 import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
 import { useDataFilter } from "@/shared/hooks/useDataFilter"
 
-export default function CoursesDashboard() {
+export default function TrainingTracksDashboard() {
   // RTK Query hooks
   const { 
     data: courses, 
@@ -50,25 +50,25 @@ export default function CoursesDashboard() {
     }), [])
   })
 
-  // Calculate progress locally from courses data
+  // Calculate progress locally from tracks data
   const progress = useMemo(() => {
     if (!courses) return null
     
-    const activeCourses = courses.filter(course => 
-      (course.progress_percentage || 0) > 0 && (course.progress_percentage || 0) < 100
+    const activeTracks = courses.filter(track => 
+      (track.progress_percentage || 0) > 0 && (track.progress_percentage || 0) < 100
     ).length
     
-    const totalProgress = courses.reduce((sum, course) => sum + (course.progress_percentage || 0), 0)
-    const averageProgress = courses.length > 0 ? Math.round(totalProgress / courses.length) : 0
+    const totalProgress = courses.reduce((sum, track) => sum + (track.progress_percentage || 0), 0)
+    const averageTrackProgress = courses.length > 0 ? Math.round(totalProgress / courses.length) : 0
     
-    const completedModules = courses.reduce((sum, course) => 
-      sum + (course.completed_courses || 0), 0
-    )
+    const completedTracks = courses.filter(track => 
+      (track.progress_percentage || 0) === 100
+    ).length
     
     return {
-      activeCourses,
-      averageProgress,
-      completedModules
+      activeTracks,
+      averageTrackProgress,
+      completedTracks
     }
   }, [courses])
 
@@ -164,20 +164,20 @@ export default function CoursesDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard
-          label="Active Courses"
-          value={progress?.activeCourses || 0}
+          label="Active Training Tracks"
+          value={progress?.activeTracks || 0}
           icon={BookOpen}
           color="success"
         />
         <StatsCard
-          label="Average Progress"
-          value={`${progress?.averageProgress || 0}%`}
+          label="Average Track Progress"
+          value={`${progress?.averageTrackProgress || 0}%`}
           icon={TrendingUp}
           color="success"
         />
         <StatsCard
-          label="Completed Modules"
-          value={progress?.completedModules || 0}
+          label="Training Tracks"
+          value={progress?.completedTracks || 0}
           icon={Award}
           color="success"
         />
@@ -187,7 +187,7 @@ export default function CoursesDashboard() {
       <FilterControls
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Search courses..."
+        searchPlaceholder="Search training tracks..."
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={updateFilter}
@@ -197,14 +197,14 @@ export default function CoursesDashboard() {
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {paginatedData.length} of {filteredAndSortedData.length} courses
+        Showing {paginatedData.length} of {filteredAndSortedData.length} training tracks
       </div>
 
       {/* Course Cards */}
       {filteredAndSortedData.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No courses found</AlertTitle>
+          <AlertTitle>No training tracks found</AlertTitle>
           <AlertDescription>
             Try adjusting your search or filter to find what you're looking for.
           </AlertDescription>

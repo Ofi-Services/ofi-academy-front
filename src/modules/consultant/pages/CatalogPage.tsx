@@ -130,7 +130,7 @@ export default function CatalogPage() {
       <FilterControls
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Search courses, platforms or categories..."
+        searchPlaceholder="Search training tracks, platforms or categories..."
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={updateFilter}

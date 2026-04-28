@@ -166,7 +166,7 @@ export default function CourseCard({
 
           {/* Course Info */}
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} modules completed
+            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} courses completed
           </div>
 
           {/* Action Button */}

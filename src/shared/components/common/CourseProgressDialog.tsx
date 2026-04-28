@@ -143,12 +143,6 @@ export default function CourseProgressDialog({
       newSet.add(String(moduleId))
       return newSet
     })
-
-    toast({
-      title: "✅ Image(s) added",
-      description: `${imageFiles.length} image(s) loaded for the module`,
-      variant: "default",
-    })
   }
 
   const handleFileRemove = (moduleId: string, index: number) => {

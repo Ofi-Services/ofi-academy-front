@@ -112,7 +112,7 @@ export default function CatalogPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Unable to load the course catalog. Please try again later.
+            Unable to load the training track. Please try again later.
           </AlertDescription>
         </Alert>
       </div>
@@ -122,7 +122,7 @@ export default function CatalogPage() {
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Course Catalog</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Training tracks</h1>
         <p className="text-muted-foreground mt-1">Discover and self-enroll in new training paths.</p>
       </div>
 

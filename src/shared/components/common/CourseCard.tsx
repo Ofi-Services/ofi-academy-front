@@ -153,8 +153,8 @@ export default function CourseCard({
           {/* Progress Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white">{progressLabel}</span>
-              <span className="text-lg font-bold text-white">{progress}%</span>
+              <span className="text-xs font-medium text-black">{progressLabel}</span>
+              <span className="text-lg font-bold text-black">{progress}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
@@ -166,7 +166,7 @@ export default function CourseCard({
 
           {/* Course Info */}
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} modules completed
+            <span className="font-medium text-foreground">{completedLessons}</span> / {totalLessons} courses completed
           </div>
 
           {/* Action Button */}

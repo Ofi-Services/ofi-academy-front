@@ -82,7 +82,7 @@ export default function CourseProgressDialog({
   const handleModuleToggle = (moduleId: string) => {
     setSelectedModules((prev) => {
       const newSet = new Set(prev)
-      
+
       if (newSet.has(moduleId)) {
         // Allow unchecking
         newSet.delete(moduleId)
@@ -92,7 +92,7 @@ export default function CourseProgressDialog({
         // 2. There are uploaded files for this module
         const wasInitiallyCompleted = initiallyCompletedModules.has(moduleId)
         const hasFiles = moduleFiles[moduleId] && moduleFiles[moduleId].length > 0
-        
+
         if (wasInitiallyCompleted || hasFiles) {
           newSet.add(moduleId)
         } else {
@@ -191,7 +191,7 @@ export default function CourseProgressDialog({
   const handleSave = async () => {
     try {
       const formData = new FormData()
-      
+
       // Add the training track ID
       formData.append("trackId", courseId)
 
@@ -219,7 +219,7 @@ export default function CourseProgressDialog({
 
       toast({
         title: "✅ Progress updated successfully",
-        description: `You have completed ${completedCount} of ${totalModules} modules (${progress}%)`,
+        description: `You have completed ${completedCount} of ${totalModules} courses (${progress}%)`,
         variant: "default",
       })
 
@@ -317,13 +317,12 @@ export default function CourseProgressDialog({
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-500 ${
-                      currentProgress < 50
+                    className={`h-full transition-all duration-500 ${currentProgress < 50
                         ? "bg-destructive"
                         : currentProgress >= 85
-                        ? "bg-[#13608b]"
-                        : "bg-primary"
-                    }`}
+                          ? "bg-[#13608b]"
+                          : "bg-primary"
+                      }`}
                     style={{ width: `${currentProgress}%` }}
                   />
                 </div>
@@ -338,7 +337,7 @@ export default function CourseProgressDialog({
             {/* Modules List */}
             <div className="space-y-2 flex-1 min-h-0">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Course Modules</Label>
+                <Label className="text-base font-semibold"> Training Track Courses</Label>
                 <span className="text-sm text-muted-foreground">
                   {selectedModules.size}/{course.courses?.length || 0} selected
                 </span>
@@ -364,7 +363,7 @@ export default function CourseProgressDialog({
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        No modules available for this course.
+                        No courses available for this training track.
                       </AlertDescription>
                     </Alert>
                   )}

@@ -59,7 +59,7 @@ export default function CourseProgressDialog({
     if (course?.courses) {
       const completedModuleIds = course.courses
         .filter((module) => module.completed)
-        .map((module) => module.id)
+        .map((module) => String(module.id))
       setSelectedModules(new Set(completedModuleIds))
       setInitiallyCompletedModules(new Set(completedModuleIds))
     }
@@ -80,21 +80,22 @@ export default function CourseProgressDialog({
   }, [open])
 
   const handleModuleToggle = (moduleId: string) => {
+    const id = String(moduleId)
     setSelectedModules((prev) => {
       const newSet = new Set(prev)
-
-      if (newSet.has(moduleId)) {
+      
+      if (newSet.has(id)) {
         // Allow unchecking
-        newSet.delete(moduleId)
+        newSet.delete(id)
       } else {
         // Only allow checking if:
         // 1. It was already completed in the DB, OR
         // 2. There are uploaded files for this module
-        const wasInitiallyCompleted = initiallyCompletedModules.has(moduleId)
-        const hasFiles = moduleFiles[moduleId] && moduleFiles[moduleId].length > 0
-
+        const wasInitiallyCompleted = initiallyCompletedModules.has(id)
+        const hasFiles = moduleFiles[id] && moduleFiles[id].length > 0
+        
         if (wasInitiallyCompleted || hasFiles) {
-          newSet.add(moduleId)
+          newSet.add(id)
         } else {
           // Show error message if trying to check without files
           toast({
@@ -117,71 +118,70 @@ export default function CourseProgressDialog({
 
     if (imageFiles.length === 0) return
 
-    // Update files state
+    // Update files state - REPLACE instead of append since we only want one evidence
     setModuleFiles((prev) => ({
       ...prev,
-      [moduleId]: [...(prev[moduleId] || []), ...imageFiles],
+      [moduleId]: imageFiles,
     }))
 
-    // Create preview URLs
+    // Create preview URLs - REPLACE instead of append
     const newPreviewUrls = imageFiles.map((file) => URL.createObjectURL(file))
-    setPreviewUrls((prev) => ({
-      ...prev,
-      [moduleId]: [...(prev[moduleId] || []), ...newPreviewUrls],
-    }))
+    setPreviewUrls((prev) => {
+      // Cleanup old preview URLs for this module
+      if (prev[moduleId]) {
+        prev[moduleId].forEach(url => URL.revokeObjectURL(url))
+      }
+      return {
+        ...prev,
+        [moduleId]: newPreviewUrls,
+      }
+    })
 
     // Automatically mark the module as completed when uploading files
     setSelectedModules((prev) => {
       const newSet = new Set(prev)
-      newSet.add(moduleId)
+      newSet.add(String(moduleId))
       return newSet
-    })
-
-    toast({
-      title: "✅ Image(s) added",
-      description: `${imageFiles.length} image(s) loaded for the module`,
-      variant: "default",
     })
   }
 
   const handleFileRemove = (moduleId: string, index: number) => {
+    const id = String(moduleId)
+    const files = moduleFiles[id] || []
+    const newFiles = files.filter((_, i) => i !== index)
+    const urls = previewUrls[id] || []
+    const newUrls = urls.filter((_, i) => i !== index)
+
     // Revoke the preview URL
-    const urlToRevoke = previewUrls[moduleId]?.[index]
+    const urlToRevoke = urls[index]
     if (urlToRevoke) {
       URL.revokeObjectURL(urlToRevoke)
     }
 
     // Remove file
     setModuleFiles((prev) => {
-      const files = prev[moduleId] || []
-      const newFiles = files.filter((_, i) => i !== index)
       if (newFiles.length === 0) {
-        return Object.fromEntries(
-          Object.entries(prev).filter(([key]) => key !== moduleId)
-        ) as ModuleFiles
+        const { [id]: _, ...rest } = prev
+        return rest
       }
-      return { ...prev, [moduleId]: newFiles }
+      return { ...prev, [id]: newFiles }
     })
 
     // Remove preview URL
     setPreviewUrls((prev) => {
-      const urls = prev[moduleId] || []
-      const newUrls = urls.filter((_, i) => i !== index)
       if (newUrls.length === 0) {
-        return Object.fromEntries(
-          Object.entries(prev).filter(([key]) => key !== moduleId)
-        ) as { [moduleId: string]: string[] }
+        const { [id]: _, ...rest } = prev
+        return rest
       }
-      return { ...prev, [moduleId]: newUrls }
+      return { ...prev, [id]: newUrls }
     })
 
     // If all files are removed and the module was NOT initially completed,
     // automatically uncheck the module
-    const remainingFiles = (moduleFiles[moduleId] || []).filter((_, i) => i !== index)
-    if (remainingFiles.length === 0 && !initiallyCompletedModules.has(moduleId)) {
+    if (newFiles.length === 0 && !initiallyCompletedModules.has(id)) {
       setSelectedModules((prev) => {
         const newSet = new Set(prev)
-        newSet.delete(moduleId)
+        newSet.delete(id)
         return newSet
       })
     }
@@ -350,13 +350,14 @@ export default function CourseProgressDialog({
                       <CourseModuleItem
                         key={module.id}
                         module={module}
-                        isCompleted={selectedModules.has(module.id)}
+                        isCompleted={selectedModules.has(String(module.id))}
                         onToggle={handleModuleToggle}
                         files={moduleFiles[module.id] || []}
                         previewUrls={previewUrls[module.id] || []}
                         onFilesChange={handleFilesChange}
                         onFileRemove={handleFileRemove}
                         link={module.link}
+                        trackId={courseId}
                       />
                     ))
                   ) : (

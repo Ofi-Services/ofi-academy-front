@@ -4,7 +4,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import {
   Clock,
   Upload,
-  X,
+  XCircle,
   ExternalLink,
   Trash2,
 } from "lucide-react"
@@ -155,15 +155,19 @@ export default function CourseModuleItem({
                   alt="Submitted evidence"
                   className="w-full h-full object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={handleDeleteSubmission}
-                  disabled={isDeleting}
-                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                <div
+                  role="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteSubmission();
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-label="Delete evidence"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity">
                   {isDeleting ? "Deleting..." : "Delete Image"}
                 </div>
@@ -208,17 +212,19 @@ export default function CourseModuleItem({
                     alt={`Preview ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    type="button"
+                  <span
+                    role="button"
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       onFileRemove(module.id, index);
                     }}
-                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label="Remove image"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
+                    <XCircle className="w-4 h-4" />
+                  </span>
                   <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 text-center opacity-0 group-hover:opacity-100 transition-opacity">
                     {files[index]?.name.length > 15
                       ? `${files[index]?.name.substring(0, 12)}...`

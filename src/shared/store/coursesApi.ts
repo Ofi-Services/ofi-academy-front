@@ -106,7 +106,11 @@ export const coursesApi = createApi({
         // Normalize name/title
         return results.map((t: any) => ({
           ...t,
-          title: t.title || t.name // Ensure title is populated
+          title: t.title || t.name, // Ensure title is populated
+          courses: t.courses?.map((c: any) => ({
+            ...c,
+            title: c.title || c.name // Ensure course title is populated
+          }))
         }));
       },
       providesTags: ['Courses'],
@@ -126,6 +130,28 @@ export const coursesApi = createApi({
     // Get course details with modules
     getCourseDetails: builder.query<TrainingTrack, string>({
       query: (courseId) => `/training-tracks/${courseId}/`,
+      transformResponse: (response: any) => {
+        // If response has the { training_track, courses, assignment } structure
+        if (response.training_track) {
+          return {
+            ...response.training_track,
+            title: response.training_track.title || response.training_track.name,
+            courses: response.courses?.map((c: any) => ({
+              ...c,
+              title: c.title || c.name
+            })) || []
+          };
+        }
+        // Fallback for regular TrainingTrack structure
+        return {
+          ...response,
+          title: response.title || response.name,
+          courses: response.courses?.map((c: any) => ({
+            ...c,
+            title: c.title || c.name
+          }))
+        };
+      },
       providesTags: (_result, _error, courseId) => [{ type: 'Courses', id: courseId }],
     }),
 

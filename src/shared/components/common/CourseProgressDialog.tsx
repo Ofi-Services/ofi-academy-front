@@ -21,7 +21,6 @@ import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/shared/components/ui/alert"
 import { useToast } from "@/shared/hooks/use-toast"
 import CourseModuleItem from "./CourseModuleItem"
-import ExpandableText from "./ExpandableText"
 
 interface CourseProgressDialogProps {
   courseId: string
@@ -288,10 +287,6 @@ export default function CourseProgressDialog({
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 flex-1">
                   <h3 className="font-semibold text-lg">{course.title}</h3>
-                  <ExpandableText 
-                    text={course.description || ""}
-                    className="text-sm text-muted-foreground"
-                  />
                 </div>
                 <Badge className="shrink-0">{course.category}</Badge>
               </div>

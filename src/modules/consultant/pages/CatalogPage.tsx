@@ -25,10 +25,27 @@ export default function CatalogPage() {
   
   const { data: trackDetails, isFetching: isFetchingDetails } = useGetCourseDetailsQuery(selectedTrack?.id ?? '', { skip: !selectedTrack });
   
-  // Only use trackDetails if it matches the current selection to avoid showing stale data
-  const displayTrack = (trackDetails && selectedTrack && trackDetails.id === selectedTrack.id) 
-    ? trackDetails 
-    : selectedTrack;
+  // Only use trackDetails if it matches the current selection to avoid showing stale data.
+  // We merge selectedTrack and trackDetails to preserve fields like description that might be in the list API.
+  const displayTrack = useMemo(() => {
+    if (!selectedTrack) return null;
+    if (trackDetails && trackDetails.id === selectedTrack.id) {
+      return {
+        ...selectedTrack,
+        ...trackDetails,
+        description: trackDetails.description || selectedTrack.description,
+        courses: trackDetails.courses?.map(detailCourse => {
+          const listCourse = selectedTrack.courses?.find(c => c.id === detailCourse.id);
+          return {
+            ...listCourse,
+            ...detailCourse,
+            description: detailCourse.description || listCourse?.description
+          };
+        }) || selectedTrack.courses
+      };
+    }
+    return selectedTrack;
+  }, [trackDetails, selectedTrack]);
 
   // Data filtering hook
   const {

@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useGetAllCoursesQuery, useGetEnrolledCoursesQuery, useEnrollInCourseMutation, useGetCourseDetailsQuery } from '@/shared/store/coursesApi';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, User, Monitor, AlertCircle } from 'lucide-react';
+import { Loader2, User, Monitor, AlertCircle, LayoutGrid, List } from 'lucide-react';
 import FilterControls, { FilterConfig } from '@/shared/components/common/FilterControls';
 import { useDataFilter } from '@/shared/hooks/useDataFilter';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/Table';
 import { TrainingTrack } from '@/shared/store/coursesApi';
 import { BookOpen } from 'lucide-react';
 
@@ -17,6 +18,19 @@ export default function CatalogPage() {
   const { data: enrolledTracks = [], isLoading: isLoadingEnrolled } = useGetEnrolledCoursesQuery();
   const [enrollInCourse, { isLoading: isEnrolling }] = useEnrollInCourseMutation();
   const [selectedTrack, setSelectedTrack] = useState<TrainingTrack | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('catalogViewMode');
+    if (saved === 'cards' || saved === 'table') {
+      setViewMode(saved);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: 'cards' | 'table') => {
+    setViewMode(mode);
+    localStorage.setItem('catalogViewMode', mode);
+  };
 
   const enrolledIds = useMemo(() => {
     return new Set(enrolledTracks.map(t => t.id));
@@ -138,9 +152,31 @@ export default function CatalogPage() {
         onSortToggle={toggleSortOrder}
       />
 
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {paginatedData.length} of {filteredAndSortedData.length} training tracks
+      {/* Results Count & View Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {paginatedData.length} of {filteredAndSortedData.length} training tracks
+        </div>
+        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md border">
+          <Button
+            variant={viewMode === 'cards' ? 'default' : 'ghost'}
+            size="sm"
+            className={`px-2 py-1 h-8 ${viewMode === 'cards' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+            onClick={() => handleViewModeChange('cards')}
+            title="Cards View"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'ghost'}
+            size="sm"
+            className={`px-2 py-1 h-8 ${viewMode === 'table' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+            onClick={() => handleViewModeChange('table')}
+            title="Table View"
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Track Cards */}
@@ -154,76 +190,151 @@ export default function CatalogPage() {
         </Alert>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedData.map((track) => {
-              const isEnrolled = enrolledIds.has(track.id);
+          {viewMode === 'cards' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+              {paginatedData.map((track) => {
+                const isEnrolled = enrolledIds.has(track.id);
 
-              return (
-                <Card
-                  key={track.id}
-                  className="flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => setSelectedTrack(track)}
-                >
-                  <CardHeader>
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
-                        <User className="w-4 h-4" />
-                        {track.platform || 'General'}
-                      </div>
-                      {track.category && (
-                        <Badge variant="outline" className="text-xs">
-                          {track.category}
-                        </Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-xl line-clamp-1">{track.title}</CardTitle>
-                    <CardDescription className="line-clamp-2 h-10">
-                      {track.description || 'Enhance your professional skills with this specialized training track.'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow pt-2">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Total Courses:</span>
-                        <span className="font-medium text-foreground">{track.total_courses || track.courses?.length || 0}</span>
-                      </div>
-                      {track.duration && (
-                        <div className="flex items-center justify-between text-muted-foreground">
-                          <span>Duration:</span>
-                          <span className="font-medium text-foreground">{track.duration}</span>
+                return (
+                  <Card
+                    key={track.id}
+                    className="flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setSelectedTrack(track)}
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+                          <User className="w-4 h-4" />
+                          {track.platform || 'General'}
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-4 mt-auto">
-                    {isEnrolled ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        Enrolled
-                      </Button>
-                    ) : (
-                      <Button
-                        className="w-full bg-primary hover:bg-primary/90"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEnroll(track.id);
-                        }}
-                        disabled={isEnrolling}
-                      >
-                        {isEnrolling ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Enrolling...
-                          </>
-                        ) : (
-                          'Enroll Now'
+                        {track.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {track.category}
+                          </Badge>
                         )}
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
+                      </div>
+                      <CardTitle className="text-xl line-clamp-1">{track.title}</CardTitle>
+                      <CardDescription className="line-clamp-2 h-10">
+                        {track.description || 'Enhance your professional skills with this specialized training track.'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow pt-2">
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Total Courses:</span>
+                          <span className="font-medium text-foreground">{track.total_courses || track.courses?.length || 0}</span>
+                        </div>
+                        {track.duration && (
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Duration:</span>
+                            <span className="font-medium text-foreground">{track.duration}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-4 mt-auto">
+                      {isEnrolled ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          Enrolled
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full bg-primary hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEnroll(track.id);
+                          }}
+                          disabled={isEnrolling}
+                        >
+                          {isEnrolling ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Enrolling...
+                            </>
+                          ) : (
+                            'Enroll Now'
+                          )}
+                        </Button>
+                      )}
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="border rounded-md animate-in fade-in duration-300">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden md:table-cell text-center">Author</TableHead>
+                    <TableHead className="hidden sm:table-cell text-center">Category</TableHead>
+                    <TableHead className="text-center">Total Courses</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((track) => {
+                    const isEnrolled = enrolledIds.has(track.id);
+                    return (
+                      <TableRow 
+                        key={track.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setSelectedTrack(track)}
+                      >
+                        <TableCell className="font-medium">
+                          <div className="line-clamp-1">{track.title}</div>
+                          {/* Show author/category on mobile */}
+                          <div className="md:hidden text-xs text-muted-foreground mt-1 flex gap-2">
+                            <span>{track.platform || 'General'}</span>
+                            {track.category && <span>• {track.category}</span>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-center text-muted-foreground">
+                          {track.platform || 'General'}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-center">
+                          {track.category ? (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {track.category}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center text-muted-foreground">
+                          {track.total_courses || track.courses?.length || 0}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {isEnrolled ? (
+                            <Button variant="outline" size="sm" disabled>
+                              Enrolled
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="bg-primary hover:bg-primary/90"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEnroll(track.id);
+                              }}
+                              disabled={isEnrolling}
+                            >
+                              {isEnrolling ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                'Enroll'
+                              )}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
 
           {/* Pagination Controls */}
           {totalPages > 1 && (

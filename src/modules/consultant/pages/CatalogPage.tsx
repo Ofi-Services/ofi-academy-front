@@ -303,8 +303,13 @@ export default function CatalogPage() {
                           </span>
                           <div className="space-y-0.5">
                             <p className="font-semibold text-gray-900">{course.title}</p>
+                            {course.description && (
+                              <p className="text-sm text-gray-600 line-clamp-2 mt-0.5">
+                                {course.description}
+                              </p>
+                            )}
                             {course.duration && (
-                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                 <span>•</span> {course.duration}
                               </p>
                             )}

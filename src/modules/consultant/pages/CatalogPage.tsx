@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/aler
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
 import { TrainingTrack } from '@/shared/store/coursesApi';
 import { BookOpen } from 'lucide-react';
+import ExpandableText from '@/shared/components/common/ExpandableText';
 
 export default function CatalogPage() {
   const { data: rawTracks, isLoading: isLoadingCatalog, refetch: refetchCatalog, error: catalogError } = useGetAllCoursesQuery();
@@ -277,9 +278,11 @@ export default function CatalogPage() {
                   )}
                 </div>
                 <DialogTitle className="text-2xl">{displayTrack.title || displayTrack.name}</DialogTitle>
-                <DialogDescription>
-                  {displayTrack.description || 'Enhance your professional skills with this specialized training track.'}
-                </DialogDescription>
+                <div className="text-sm text-muted-foreground mt-1.5">
+                  <ExpandableText 
+                    text={displayTrack.description || 'Enhance your professional skills with this specialized training track.'} 
+                  />
+                </div>
               </DialogHeader>
 
               <div className="mt-6 space-y-4">
@@ -304,9 +307,10 @@ export default function CatalogPage() {
                           <div className="space-y-0.5">
                             <p className="font-semibold text-gray-900">{course.title}</p>
                             {course.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2 mt-0.5">
-                                {course.description}
-                              </p>
+                              <ExpandableText 
+                                text={course.description}
+                                className="text-sm text-gray-600 mt-0.5"
+                              />
                             )}
                             {course.duration && (
                               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">

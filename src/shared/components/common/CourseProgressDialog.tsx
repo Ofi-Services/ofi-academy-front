@@ -343,7 +343,7 @@ export default function CourseProgressDialog({
                 </span>
               </div>
 
-              <ScrollArea className="flex-1 pr-4">
+              <div className="flex-1 overflow-y-auto pr-4 min-h-0 max-h-[40vh]">
                 <div className="space-y-3">
                   {sortedModules.length > 0 ? (
                     sortedModules.map((module) => (
@@ -369,7 +369,7 @@ export default function CourseProgressDialog({
                     </Alert>
                   )}
                 </div>
-              </ScrollArea>
+              </div>
             </div>
 
             <DialogFooter className="gap-2">

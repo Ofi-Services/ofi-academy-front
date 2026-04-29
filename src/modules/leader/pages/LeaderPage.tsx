@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react"
-import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download, Zap } from "lucide-react"
+import { useState, useMemo, useEffect } from "react"
+import { AlertCircle, Users2, TrendingUp, AlertTriangle, Award, Download, Zap, LayoutGrid, List, Eye } from "lucide-react"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
@@ -9,11 +9,29 @@ import { useDataFilter } from "@/shared/hooks/useDataFilter"
 import { useGetTeamMembersQuery, useLazyExportTalentsReportQuery } from "../store/leaderApi"
 import TrainingTracksDialog from "../components/TrainingTracksDialog"
 import TeamMemberCard from "../components/TeamMemberCard"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/Table'
+import { Badge } from '@/shared/components/ui/badge'
+import { Progress } from '@/shared/components/ui/progress'
+import { getStatusConfig, formatDate } from "../utils"
 // 1. Import useToast
 import { useToast } from "@/shared/hooks/use-toast"
 
 export default function LeaderDashboard() {
   const [selectedMember, setSelectedMember] = useState<{ id: number; name: string } | null>(null)
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('leaderViewMode');
+    if (saved === 'cards' || saved === 'table') {
+      setViewMode(saved);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: 'cards' | 'table') => {
+    setViewMode(mode);
+    localStorage.setItem('leaderViewMode', mode);
+  };
+
   // 2. Initialize toast hook
   const { toast } = useToast()
 
@@ -290,9 +308,31 @@ export default function LeaderDashboard() {
           onSortToggle={toggleSortOrder}
         />
 
-        {/* Results Count */}
-        <div className="text-sm text-muted-foreground">
-          Showing {paginatedData.length} of {filteredAndSortedData.length} members
+        {/* Results Count & View Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {paginatedData.length} of {filteredAndSortedData.length} members
+          </div>
+          <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md border">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              className={`px-2 py-1 h-8 ${viewMode === 'cards' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+              onClick={() => handleViewModeChange('cards')}
+              title="Cards View"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              className={`px-2 py-1 h-8 ${viewMode === 'table' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+              onClick={() => handleViewModeChange('table')}
+              title="Table View"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Team Members Cards */}
@@ -306,15 +346,86 @@ export default function LeaderDashboard() {
           </Alert>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {paginatedData.map((member) => (
-                <TeamMemberCard
-                  key={member.id}
-                  member={member}
-                  onViewTracks={setSelectedMember}
-                />
-              ))}
-            </div>
+            {viewMode === 'cards' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                {paginatedData.map((member) => (
+                  <TeamMemberCard
+                    key={member.id}
+                    member={member}
+                    onViewTracks={setSelectedMember}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="border rounded-md animate-in fade-in duration-300">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden md:table-cell text-center">Status</TableHead>
+                      <TableHead className="w-48 text-center">Progress</TableHead>
+                      <TableHead className="hidden lg:table-cell text-center">Courses</TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">Last Activity</TableHead>
+                      <TableHead className="text-center">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((member) => {
+                      const statusConfig = getStatusConfig(member.status)
+                      return (
+                        <TableRow key={member.id} className="hover:bg-muted/50">
+                          <TableCell className="font-medium">
+                            <div className="font-semibold text-base mb-0.5">{member.name}</div>
+                            <div className="text-xs text-muted-foreground">{member.email}</div>
+                            <div className="md:hidden mt-1 flex gap-2 text-xs text-muted-foreground">
+                              <span>{member.title}</span>
+                              <span>•</span>
+                              <span>{member.region}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell text-center">
+                            <Badge variant={statusConfig.variant} className={statusConfig.className}>
+                              {statusConfig.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex flex-col gap-1.5 mx-auto max-w-40">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">Overall</span>
+                                <span className="font-medium">{member.completion_percentage}%</span>
+                              </div>
+                              <Progress value={member.completion_percentage} className="h-1.5" />
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell text-center text-sm">
+                            <div className="text-muted-foreground">
+                              <span className="font-medium text-foreground">{member.completed_courses}</span> completed
+                            </div>
+                            <div className="text-muted-foreground">
+                              <span className="font-medium text-foreground">{member.active_courses}</span> active
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-center text-sm text-muted-foreground">
+                            {formatDate(member.lastActivity)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedMember({ id: member.id, name: member.name })}
+                              className="gap-2"
+                            >
+                              <Eye className="h-4 w-4" />
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

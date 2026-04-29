@@ -1,7 +1,8 @@
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
-import { BookOpen, Award, TrendingUp, Monitor, Activity } from "lucide-react"
+import CourseProgressDialog from "@/shared/components/common/CourseProgressDialog"
+import { BookOpen, Award, TrendingUp, Monitor, Activity, LayoutGrid, List } from "lucide-react"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
@@ -9,8 +10,26 @@ import { AlertCircle } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import FilterControls, { FilterConfig } from "@/shared/components/common/FilterControls"
 import { useDataFilter } from "@/shared/hooks/useDataFilter"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/Table'
+import { Badge } from '@/shared/components/ui/badge'
+import { Progress } from '@/shared/components/ui/progress'
 
 export default function TrainingTracksDashboard() {
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('dashboardViewMode');
+    if (saved === 'cards' || saved === 'table') {
+      setViewMode(saved);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: 'cards' | 'table') => {
+    setViewMode(mode);
+    localStorage.setItem('dashboardViewMode', mode);
+  };
+
   // RTK Query hooks
   const { 
     data: courses, 
@@ -195,9 +214,31 @@ export default function TrainingTracksDashboard() {
         onSortToggle={toggleSortOrder}
       />
 
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {paginatedData.length} of {filteredAndSortedData.length} training tracks
+      {/* Results Count & View Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {paginatedData.length} of {filteredAndSortedData.length} training tracks
+        </div>
+        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md border">
+          <Button
+            variant={viewMode === 'cards' ? 'default' : 'ghost'}
+            size="sm"
+            className={`px-2 py-1 h-8 ${viewMode === 'cards' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+            onClick={() => handleViewModeChange('cards')}
+            title="Cards View"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'ghost'}
+            size="sm"
+            className={`px-2 py-1 h-8 ${viewMode === 'table' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+            onClick={() => handleViewModeChange('table')}
+            title="Table View"
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Course Cards */}
@@ -211,23 +252,87 @@ export default function TrainingTracksDashboard() {
         </Alert>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedData.map((course) => (
-              <CourseCard
-                key={course.id}
-                courseId={course.id}
-                title={course.title}
-                description={course.description}
-                progress={course.progress_percentage || 0}
-                completedLessons={course.completed_courses || 0}
-                totalLessons={course.total_courses || 0}
-                platform={course.platform}
-                category={course.category}
-                duration={course.duration}
-                dueDate={course.due_date ? new Date(course.due_date) : null}
-              />
-            ))}
-          </div>
+          {viewMode === 'cards' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+              {paginatedData.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  courseId={course.id}
+                  title={course.title}
+                  description={course.description}
+                  progress={course.progress_percentage || 0}
+                  completedLessons={course.completed_courses || 0}
+                  totalLessons={course.total_courses || 0}
+                  platform={course.platform}
+                  category={course.category}
+                  duration={course.duration}
+                  dueDate={course.due_date ? new Date(course.due_date) : null}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="border rounded-md animate-in fade-in duration-300">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden md:table-cell text-center">Author</TableHead>
+                    <TableHead className="hidden sm:table-cell text-center">Category</TableHead>
+                    <TableHead className="w-48 text-center">Progress</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((course) => {
+                    const progressValue = course.progress_percentage || 0;
+                    return (
+                      <TableRow key={course.id} className="hover:bg-muted/50">
+                        <TableCell className="font-medium">
+                          <div className="line-clamp-1">{course.title}</div>
+                          <div className="md:hidden text-xs text-muted-foreground mt-1 flex gap-2">
+                            <span>{course.platform || 'General'}</span>
+                            {course.category && <span>• {course.category}</span>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-center text-muted-foreground">
+                          {course.platform || 'General'}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-center">
+                          {course.category ? (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {course.category}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col gap-1.5 mx-auto max-w-40">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">
+                                {course.completed_courses || 0} / {course.total_courses || 0}
+                              </span>
+                              <span className="font-medium">{Math.round(progressValue)}%</span>
+                            </div>
+                            <Progress value={progressValue} className="h-1.5" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            size="sm" 
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                            onClick={() => setSelectedCourseId(course.id)}
+                          >
+                            Continue
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
@@ -263,6 +368,14 @@ export default function TrainingTracksDashboard() {
             </div>
           )}
         </>
+      )}
+
+      {selectedCourseId && (
+        <CourseProgressDialog
+          courseId={selectedCourseId}
+          open={!!selectedCourseId}
+          onOpenChange={(open) => !open && setSelectedCourseId(null)}
+        />
       )}
     </div>
   )

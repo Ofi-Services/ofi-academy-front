@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/aler
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
 import { TrainingTrack } from '@/shared/store/coursesApi';
 import { BookOpen } from 'lucide-react';
+import ExpandableText from '@/shared/components/common/ExpandableText';
 
 export default function CatalogPage() {
   const { data: rawTracks, isLoading: isLoadingCatalog, refetch: refetchCatalog, error: catalogError } = useGetAllCoursesQuery();
@@ -24,10 +25,27 @@ export default function CatalogPage() {
   
   const { data: trackDetails, isFetching: isFetchingDetails } = useGetCourseDetailsQuery(selectedTrack?.id ?? '', { skip: !selectedTrack });
   
-  // Only use trackDetails if it matches the current selection to avoid showing stale data
-  const displayTrack = (trackDetails && selectedTrack && trackDetails.id === selectedTrack.id) 
-    ? trackDetails 
-    : selectedTrack;
+  // Only use trackDetails if it matches the current selection to avoid showing stale data.
+  // We merge selectedTrack and trackDetails to preserve fields like description that might be in the list API.
+  const displayTrack = useMemo(() => {
+    if (!selectedTrack) return null;
+    if (trackDetails && trackDetails.id === selectedTrack.id) {
+      return {
+        ...selectedTrack,
+        ...trackDetails,
+        description: trackDetails.description || selectedTrack.description,
+        courses: trackDetails.courses?.map(detailCourse => {
+          const listCourse = selectedTrack.courses?.find(c => c.id === detailCourse.id);
+          return {
+            ...listCourse,
+            ...detailCourse,
+            description: detailCourse.description || listCourse?.description
+          };
+        }) || selectedTrack.courses
+      };
+    }
+    return selectedTrack;
+  }, [trackDetails, selectedTrack]);
 
   // Data filtering hook
   const {
@@ -277,9 +295,11 @@ export default function CatalogPage() {
                   )}
                 </div>
                 <DialogTitle className="text-2xl">{displayTrack.title || displayTrack.name}</DialogTitle>
-                <DialogDescription>
-                  {displayTrack.description || 'Enhance your professional skills with this specialized training track.'}
-                </DialogDescription>
+                <div className="text-sm text-muted-foreground mt-1.5">
+                  <ExpandableText 
+                    text={displayTrack.description || 'Enhance your professional skills with this specialized training track.'} 
+                  />
+                </div>
               </DialogHeader>
 
               <div className="mt-6 space-y-4">
@@ -303,8 +323,14 @@ export default function CatalogPage() {
                           </span>
                           <div className="space-y-0.5">
                             <p className="font-semibold text-gray-900">{course.title}</p>
+                            {course.description && (
+                              <ExpandableText 
+                                text={course.description}
+                                className="text-sm text-gray-600 mt-0.5"
+                              />
+                            )}
                             {course.duration && (
-                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                 <span>•</span> {course.duration}
                               </p>
                             )}

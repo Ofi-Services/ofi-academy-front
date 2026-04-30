@@ -8,7 +8,7 @@ import CourseProgressDialog from "./CourseProgressDialog"
 interface CourseCardProps {
   courseId: string
   title: string
-  description?: string
+  description?: string | null
   progress: number
   completedLessons: number
   totalLessons: number

@@ -11,7 +11,6 @@ import { useDispatch } from "react-redux";
 import { baseApi } from "@/core/api/baseApi";
 import { coursesApi } from "@/shared/store/coursesApi";
 import { leaderApi } from "@/modules/leader/store/leaderApi";
-import { API_CONFIG } from "@/core/api/apiClient";
 
 type UserRole = "Talent" | "Leader" | "HR";
 
@@ -52,10 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Fetch user data from backend profile endpoint
-      // const profileUrl = "https://ofiacademy.api.sofiatechnology.ai/api/auth/profile/";
-      const profileUrl = `${API_CONFIG.BASE_URL}/auth/profile/`;
       const response = await fetch(
-        profileUrl,
+        "https://ofiacademy.api.sofiatechnology.ai/api/auth/profile/",
         {
           method: "GET",
           headers: {
@@ -158,10 +155,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // const loginUrl = "https://ofiacademy.api.sofiatechnology.ai/api/auth/login/";
-      const loginUrl = `${API_CONFIG.BASE_URL}/auth/login/`;
       const response = await fetch(
-        loginUrl,
+        "https://ofiacademy.api.sofiatechnology.ai/api/auth/login/",
         {
           method: "POST",
           headers: {

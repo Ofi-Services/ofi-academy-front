@@ -7,12 +7,13 @@ import { Label } from "@/shared/components/ui/label"
 import { AlertCircle, Shield } from "lucide-react"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
-  // Show traditional login form by default for local development
+
+  // Show traditional login form only in development mode
   const isDevelopment = import.meta.env.MODE === 'development'
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +21,7 @@ export default function LoginPage() {
     setError("")
     setIsLoading(true)
 
-    const success = await login(username, password)
+    const success = await login(email, password)
     if (!success) {
       setError("Incorrect credentials. Please try again.")
       setIsLoading(false)
@@ -28,8 +29,7 @@ export default function LoginPage() {
   }
 
   const handleSamlLogin = () => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api"
-    window.location.href = `${baseUrl.replace(/\/api$/, '')}/saml/sso/`
+    window.location.href = "https://ofiacademy.api.sofiatechnology.ai/saml/sso/"
   }
 
   return (
@@ -56,15 +56,15 @@ export default function LoginPage() {
             <>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-base text-foreground">
-                    Username
+                  <Label htmlFor="email" className="text-base text-foreground">
+                    Email
                   </Label>
                   <Input
-                    id="username"
-                    type="text"
-                    placeholder="your_username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     className="h-12 border-border text-foreground placeholder:text-muted-foreground"
                   />

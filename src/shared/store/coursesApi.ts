@@ -6,7 +6,7 @@ import { API_CONFIG } from '@/core/api/apiClient'
 export interface Course {
   id: string
   title: string
-  description?: string
+  description?: string | null
   duration?: string
   completed: boolean
   order: number
@@ -19,7 +19,7 @@ export interface Course {
 export interface TrainingTrack {
   id: string
   title: string
-  description?: string
+  description?: string | null
   enrolled: boolean
   due_date: Date | null
   progress_percentage: number

@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/shared/hooks/use-toast"
 import { Course, useDeleteCourseSubmissionMutation } from "@/shared/store/coursesApi"
+import ExpandableText from "./ExpandableText"
 
 interface ModuleItemProps {
   module: Course
@@ -128,9 +129,10 @@ export default function CourseModuleItem({
             )}
           </div>
           {module.description && (
-            <p className="text-sm text-muted-foreground">
-              {module.description}
-            </p>
+            <ExpandableText 
+              text={module.description}
+              className="text-sm text-muted-foreground"
+            />
           )}
           {module.duration && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

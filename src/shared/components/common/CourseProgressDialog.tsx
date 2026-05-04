@@ -287,9 +287,6 @@ export default function CourseProgressDialog({
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 flex-1">
                   <h3 className="font-semibold text-lg">{course.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {course.description}
-                  </p>
                 </div>
                 <Badge className="shrink-0">{course.category}</Badge>
               </div>
@@ -335,7 +332,7 @@ export default function CourseProgressDialog({
             <Separator />
 
             {/* Modules List */}
-            <div className="space-y-2 flex-1 min-h-0">
+            <div className="space-y-2 flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between">
                 <Label className="text-base font-semibold"> Training Track Courses</Label>
                 <span className="text-sm text-muted-foreground">
@@ -343,7 +340,7 @@ export default function CourseProgressDialog({
                 </span>
               </div>
 
-              <ScrollArea className="h-[350px] pr-4">
+              <div className="flex-1 overflow-y-auto pr-4 min-h-0 max-h-[40vh]">
                 <div className="space-y-3">
                   {sortedModules.length > 0 ? (
                     sortedModules.map((module) => (
@@ -369,7 +366,7 @@ export default function CourseProgressDialog({
                     </Alert>
                   )}
                 </div>
-              </ScrollArea>
+              </div>
             </div>
 
             <DialogFooter className="gap-2">

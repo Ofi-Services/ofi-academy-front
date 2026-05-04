@@ -267,6 +267,7 @@ export default function CatalogPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
+                    <TableHead className="hidden lg:table-cell">Description</TableHead>
                     <TableHead className="hidden md:table-cell text-center">Author</TableHead>
                     <TableHead className="hidden sm:table-cell text-center">Category</TableHead>
                     <TableHead className="text-center">Total Courses</TableHead>
@@ -284,11 +285,17 @@ export default function CatalogPage() {
                       >
                         <TableCell className="font-medium">
                           <div className="line-clamp-1">{track.title}</div>
-                          {/* Show author/category on mobile */}
-                          <div className="md:hidden text-xs text-muted-foreground mt-1 flex gap-2">
-                            <span>{track.platform || 'General'}</span>
-                            {track.category && <span>• {track.category}</span>}
+                          {/* Show info on mobile */}
+                          <div className="md:hidden text-xs text-muted-foreground mt-1 space-y-1">
+                            <div className="flex gap-2">
+                              <span>{track.platform || 'General'}</span>
+                              {track.category && <span>• {track.category}</span>}
+                            </div>
+                            <div className="line-clamp-1 italic">{track.description}</div>
                           </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm max-w-sm">
+                          <div className="line-clamp-2">{track.description || '-'}</div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-center text-muted-foreground">
                           {track.platform || 'General'}

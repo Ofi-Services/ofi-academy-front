@@ -9,7 +9,6 @@ import {
 } from "@/shared/components/ui/dialog"
 import { Button } from "@/shared/components/ui/button"
 import { Label } from "@/shared/components/ui/label"
-import { ScrollArea } from "@/shared/components/ui/scroll-area"
 import { Separator } from "@/shared/components/ui/separator"
 import { Badge } from "@/shared/components/ui/badge"
 import { Clock, BookOpen, AlertCircle } from "lucide-react"
@@ -83,7 +82,7 @@ export default function CourseProgressDialog({
     const id = String(moduleId)
     setSelectedModules((prev) => {
       const newSet = new Set(prev)
-      
+
       if (newSet.has(id)) {
         // Allow unchecking
         newSet.delete(id)
@@ -93,7 +92,7 @@ export default function CourseProgressDialog({
         // 2. There are uploaded files for this module
         const wasInitiallyCompleted = initiallyCompletedModules.has(id)
         const hasFiles = moduleFiles[id] && moduleFiles[id].length > 0
-        
+
         if (wasInitiallyCompleted || hasFiles) {
           newSet.add(id)
         } else {
@@ -315,10 +314,10 @@ export default function CourseProgressDialog({
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-500 ${currentProgress < 50
-                        ? "bg-destructive"
-                        : currentProgress >= 85
-                          ? "bg-[#13608b]"
-                          : "bg-primary"
+                      ? "bg-destructive"
+                      : currentProgress >= 85
+                        ? "bg-[#13608b]"
+                        : "bg-primary"
                       }`}
                     style={{ width: `${currentProgress}%` }}
                   />

@@ -283,7 +283,7 @@ export default function CatalogPage() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => setSelectedTrack(track)}
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium max-w-[180px]">
                           <div className="line-clamp-1">{track.title}</div>
                           {/* Show info on mobile */}
                           <div className="md:hidden text-xs text-muted-foreground mt-1 space-y-1">
@@ -294,8 +294,8 @@ export default function CatalogPage() {
                             <div className="line-clamp-1 italic">{track.description}</div>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm max-w-sm">
-                          <div className="line-clamp-2">{track.description || '-'}</div>
+                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm max-w-[400px]">
+                          <div className="line-clamp-2 leading-relaxed">{track.description || '-'}</div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-center text-muted-foreground">
                           {track.platform || 'General'}

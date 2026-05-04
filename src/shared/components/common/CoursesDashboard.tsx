@@ -276,7 +276,6 @@ export default function TrainingTracksDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead className="hidden lg:table-cell">Description</TableHead>
                     <TableHead className="hidden md:table-cell text-center">Author</TableHead>
                     <TableHead className="hidden sm:table-cell text-center">Category</TableHead>
                     <TableHead className="w-48 text-center">Progress</TableHead>
@@ -290,16 +289,10 @@ export default function TrainingTracksDashboard() {
                       <TableRow key={course.id} className="hover:bg-muted/50">
                         <TableCell className="font-medium">
                           <div className="line-clamp-1">{course.title}</div>
-                          <div className="md:hidden text-xs text-muted-foreground mt-1 space-y-1">
-                            <div className="flex gap-2">
-                              <span>{course.platform || 'General'}</span>
-                              {course.category && <span>• {course.category}</span>}
-                            </div>
-                            <div className="line-clamp-1 italic">{course.description}</div>
+                          <div className="md:hidden text-xs text-muted-foreground mt-1 flex gap-2">
+                            <span>{course.platform || 'General'}</span>
+                            {course.category && <span>• {course.category}</span>}
                           </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-muted-foreground text-sm max-w-sm">
-                          <div className="line-clamp-2">{course.description || '-'}</div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-center text-muted-foreground">
                           {course.platform || 'General'}

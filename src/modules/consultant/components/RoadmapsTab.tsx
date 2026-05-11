@@ -21,7 +21,6 @@ import { Input } from '@/shared/components/ui/Input';
 import { TrainingTrack, Roadmap } from '@/shared/store/coursesApi';
 import ExpandableText from '@/shared/components/common/ExpandableText';
 import RoadmapTimeline from './RoadmapTimeline';
-import { MOCK_ROADMAPS } from './mockRoadmaps';
 
 export default function RoadmapsTab() {
   const {
@@ -38,12 +37,10 @@ export default function RoadmapsTab() {
   const [searchTerm, setSearchTerm] = useState('');
   const [enrollingRoadmapId, setEnrollingRoadmapId] = useState<string | null>(null);
 
-  // Fall back to mock roadmaps if the backend hasn't returned anything yet,
-  // so the UI is verifiable while the new endpoint is being wired up.
-  // Also hydrate tracks from the catalog list when the roadmaps endpoint
+  // Hydrate tracks from the catalog list when the roadmaps endpoint
   // returns tracks with only ids (or partial data).
   const roadmaps = useMemo(() => {
-    if (!rawRoadmaps || rawRoadmaps.length === 0) return MOCK_ROADMAPS;
+    if (!rawRoadmaps) return [];
 
     const trackById = new Map(allTracks.map((t) => [String(t.id), t]));
 
@@ -176,8 +173,17 @@ export default function RoadmapsTab() {
     );
   }
 
-  const usingMockData =
-    !!roadmapsError || !rawRoadmaps || rawRoadmaps.length === 0;
+  if (roadmapsError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Unable to load roadmaps. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -187,16 +193,6 @@ export default function RoadmapsTab() {
           Follow guided paths step by step to grow your skills.
         </p>
       </div>
-
-      {usingMockData && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Preview mode</AlertTitle>
-          <AlertDescription>
-            Showing mock roadmaps while the backend endpoint is being wired up.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

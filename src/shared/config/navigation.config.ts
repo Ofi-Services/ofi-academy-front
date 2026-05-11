@@ -1,4 +1,4 @@
-import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target, MessageSquare, Search } from "lucide-react"
+import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target, MessageSquare, Search, Route } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -19,6 +19,7 @@ export const CONSULTANT_NAV: NavSection[] = [
     items: [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
+      { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
       { label: "Training Schedule", icon: Calendar, path: "/schedule" },
       //{ label: "Course Resources", icon: BookOpen, path: "/resources" },
     ],
@@ -40,6 +41,7 @@ export const LEADER_NAV: NavSection[] = [
     items: [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
+      { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
       { label: "Team Overview", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
       { label: "Calendar", icon: Target, path: "/leader/plans" },
@@ -63,6 +65,7 @@ export const HR_NAV: NavSection[] = [
     items: [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
+      { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
       { label: "Team Overview", icon: Users2, path: "/hr/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
       { label: "Calendar", icon: Target, path: "/hr/plans" },

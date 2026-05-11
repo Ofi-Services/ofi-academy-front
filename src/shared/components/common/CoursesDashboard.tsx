@@ -2,7 +2,8 @@ import { useMemo, useState, useEffect } from "react"
 import StatsCard from "@/shared/components/common/StatsCard"
 import CourseCard from "@/shared/components/common/CourseCard"
 import CourseProgressDialog from "@/shared/components/common/CourseProgressDialog"
-import { BookOpen, Award, TrendingUp, Monitor, Activity, LayoutGrid, List } from "lucide-react"
+import { BookOpen, Award, TrendingUp, Monitor, Activity, LayoutGrid, List, Route as RouteIcon } from "lucide-react"
+import MyProgressRoadmapView from "@/shared/components/common/MyProgressRoadmapView"
 import { useGetEnrolledCoursesQuery } from "../../store/coursesApi"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
@@ -15,17 +16,17 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Progress } from '@/shared/components/ui/progress'
 
 export default function TrainingTracksDashboard() {
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'cards' | 'table' | 'roadmap'>('cards');
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('dashboardViewMode');
-    if (saved === 'cards' || saved === 'table') {
+    if (saved === 'cards' || saved === 'table' || saved === 'roadmap') {
       setViewMode(saved);
     }
   }, []);
 
-  const handleViewModeChange = (mode: 'cards' | 'table') => {
+  const handleViewModeChange = (mode: 'cards' | 'table' | 'roadmap') => {
     setViewMode(mode);
     localStorage.setItem('dashboardViewMode', mode);
   };
@@ -238,11 +239,25 @@ export default function TrainingTracksDashboard() {
           >
             <List className="w-4 h-4" />
           </Button>
+          <Button
+            variant={viewMode === 'roadmap' ? 'default' : 'ghost'}
+            size="sm"
+            className={`px-2 py-1 h-8 ${viewMode === 'roadmap' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground'}`}
+            onClick={() => handleViewModeChange('roadmap')}
+            title="Roadmap View"
+          >
+            <RouteIcon className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Course Cards */}
-      {filteredAndSortedData.length === 0 ? (
+      {/* Roadmap view bypasses filters and pagination */}
+      {viewMode === 'roadmap' ? (
+        <MyProgressRoadmapView
+          courses={courses || []}
+          onSelectCourse={setSelectedCourseId}
+        />
+      ) : filteredAndSortedData.length === 0 ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No training tracks found</AlertTitle>

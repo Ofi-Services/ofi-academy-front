@@ -31,6 +31,14 @@ export interface TrainingTrack {
   thumbnail?: string
   courses?: Course[]
   name?: string // Backend might use 'name' instead of 'title'
+  order?: number
+}
+
+export interface Roadmap {
+  id: string
+  name: string
+  description?: string | null
+  training_tracks: TrainingTrack[]
 }
 
 export interface PaginatedResponse<T> {
@@ -99,6 +107,66 @@ export const coursesApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Courses', 'Progress', 'Schedule'],
   endpoints: (builder) => ({
+    // Get all roadmaps (each containing ordered TrainingTracks)
+    getAllRoadmaps: builder.query<Roadmap[], void>({
+      query: () => '/roadmaps/',
+      transformResponse: (response: any) => {
+        console.log('[getAllRoadmaps] Raw response:', response)
+        const results: any[] = response?.results || (Array.isArray(response) ? response : [])
+
+        return results.map((r: any) => {
+          // The backend may name the track list differently across versions.
+          // Tracks can also arrive as join-table rows: { order, training_track: {...} }.
+          const rawTracks: any[] =
+            r.training_tracks ||
+            r.tracks ||
+            r.steps ||
+            r.training_track_set ||
+            r.roadmap_tracks ||
+            r.roadmap_training_tracks ||
+            []
+
+          if (!rawTracks.length) {
+            console.warn(
+              `[getAllRoadmaps] Roadmap "${r.name || r.title || r.id}" arrived with no tracks. Keys present:`,
+              Object.keys(r)
+            )
+          }
+
+          const normalizedTracks = rawTracks
+            .map((entry: any, idx: number) => {
+              // Unwrap join-table rows that nest the real track under a key.
+              const inner =
+                entry?.training_track ||
+                entry?.track ||
+                entry?.training ||
+                entry
+              const order = entry?.order ?? inner?.order ?? idx
+              return { ...inner, order }
+            })
+            .filter((t: any) => t && t.id != null)
+            .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+            .map((t: any) => ({
+              ...t,
+              id: String(t.id),
+              title: t.title || t.name,
+              courses: t.courses?.map((c: any) => ({
+                ...c,
+                title: c.title || c.name,
+              })),
+            }))
+
+          return {
+            id: String(r.id),
+            name: r.name || r.title,
+            description: r.description ?? null,
+            training_tracks: normalizedTracks,
+          }
+        })
+      },
+      providesTags: ['Courses'],
+    }),
+
     // Get all courses (Catalog)
     getAllCourses: builder.query<TrainingTrack[], void>({
       query: () => '/training-tracks/all/',
@@ -216,6 +284,7 @@ export const coursesApi = createApi({
 
 // Export hooks
 export const {
+  useGetAllRoadmapsQuery,
   useGetAllCoursesQuery,
   useGetEnrolledCoursesQuery,
   useGetCourseDetailsQuery,

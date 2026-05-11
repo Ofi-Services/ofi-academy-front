@@ -9,7 +9,6 @@ import {
   useGetAllRoadmapsQuery,
   TrainingTrack,
 } from '@/shared/store/coursesApi';
-import { MOCK_ROADMAPS } from '@/modules/consultant/components/mockRoadmaps';
 
 interface MyProgressRoadmapViewProps {
   courses: TrainingTrack[];
@@ -22,10 +21,7 @@ export default function MyProgressRoadmapView({
 }: MyProgressRoadmapViewProps) {
   const { data: rawRoadmaps, isLoading } = useGetAllRoadmapsQuery();
 
-  const roadmaps = useMemo(() => {
-    if (!rawRoadmaps || rawRoadmaps.length === 0) return MOCK_ROADMAPS;
-    return rawRoadmaps;
-  }, [rawRoadmaps]);
+  const roadmaps = useMemo(() => rawRoadmaps ?? [], [rawRoadmaps]);
 
   const enrolledById = useMemo(() => {
     const map = new Map<string, TrainingTrack>();

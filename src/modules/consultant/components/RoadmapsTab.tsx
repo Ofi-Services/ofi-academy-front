@@ -3,7 +3,7 @@ import {
   useGetAllRoadmapsQuery,
   useGetAllCoursesQuery,
   useGetEnrolledCoursesQuery,
-  useEnrollInCourseMutation,
+  useEnrollInRoadmapMutation,
   useGetCourseDetailsQuery,
 } from '@/shared/store/coursesApi';
 import { Button } from '@/shared/components/ui/button';
@@ -35,7 +35,7 @@ export default function RoadmapsTab() {
   const { data: enrolledTracks = [], isLoading: isLoadingEnrolled } =
     useGetEnrolledCoursesQuery();
   const { data: allTracks = [] } = useGetAllCoursesQuery();
-  const [enrollInCourse] = useEnrollInCourseMutation();
+  const [enrollInRoadmap] = useEnrollInRoadmapMutation();
   const [selectedTrack, setSelectedTrack] = useState<TrainingTrack | null>(null);
   const [enrollingRoadmapId, setEnrollingRoadmapId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -144,22 +144,17 @@ export default function RoadmapsTab() {
   }, [trackDetails, selectedTrack]);
 
   const handleEnrollRoadmap = async (roadmap: Roadmap) => {
-    const pending = roadmap.training_tracks.filter((t) => !enrolledIds.has(String(t.id)));
-    if (pending.length === 0) return;
-
     setEnrollingRoadmapId(roadmap.id);
-    const results = await Promise.allSettled(
-      pending.map((t) => enrollInCourse(t.id).unwrap())
-    );
-    setEnrollingRoadmapId(null);
-
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    const succeeded = pending.length - failed;
-    if (succeeded > 0)
-      toast.success(`Enrolled in ${succeeded} ${succeeded === 1 ? 'track' : 'tracks'} of "${roadmap.name}".`);
-    if (failed > 0)
-      toast.error(`${failed} ${failed === 1 ? 'track' : 'tracks'} could not be enrolled.`);
-    refetchRoadmaps();
+    try {
+      await enrollInRoadmap(roadmap.id).unwrap();
+      toast.success(`Enrolled in roadmap "${roadmap.name}".`);
+      refetchRoadmaps();
+    } catch (error: any) {
+      const message = error?.data?.error || error?.data?.message;
+      toast.error(message || 'Failed to enroll in roadmap. Please try again.');
+    } finally {
+      setEnrollingRoadmapId(null);
+    }
   };
 
   const updateFilter = (key: string, value: string) => {

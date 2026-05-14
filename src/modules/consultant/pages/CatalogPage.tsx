@@ -28,12 +28,18 @@ export default function CatalogPage() {
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid grid-cols-2 w-full max-w-md h-auto">
-          <TabsTrigger value="catalog" className="gap-2 py-2">
+        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0 gap-0">
+          <TabsTrigger
+            value="catalog"
+            className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium"
+          >
             <Search className="w-4 h-4" />
             Training Catalog
           </TabsTrigger>
-          <TabsTrigger value="roadmaps" className="gap-2 py-2">
+          <TabsTrigger
+            value="roadmaps"
+            className="gap-2 rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium"
+          >
             <RouteIcon className="w-4 h-4" />
             Roadmaps
           </TabsTrigger>

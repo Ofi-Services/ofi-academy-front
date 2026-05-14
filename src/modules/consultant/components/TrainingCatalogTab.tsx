@@ -87,8 +87,9 @@ export default function TrainingCatalogTab() {
       toast.success('Successfully enrolled!');
       refetchCatalog();
     } catch (error: any) {
-      if (error?.status === 400) {
-        toast.error('You are already enrolled in this track via your job title.');
+      const message = error?.data?.error || error?.data?.message;
+      if (message) {
+        toast.error(message);
       } else {
         toast.error('Failed to enroll. Please try again.');
       }

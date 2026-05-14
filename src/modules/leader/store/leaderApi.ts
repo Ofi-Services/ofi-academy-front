@@ -145,7 +145,7 @@ export const leaderApi = baseApi.injectEndpoints({
       }),
     }),
     
-    // Export talents report as CSV
+    // Export talents report as Excel
     exportTalentsReport: builder.query<Blob, void>({
       query: () => ({
         url: "/leader/talents/export/",

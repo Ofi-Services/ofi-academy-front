@@ -54,7 +54,7 @@ export default function LeaderDashboard() {
 
       // Suggested filename
       const date = new Date().toISOString().slice(0, 10)
-      link.setAttribute("download", `talents_report_${date}.csv`)
+      link.setAttribute("download", `talents_report_${date}.xlsx`)
 
       document.body.appendChild(link)
       link.click()
@@ -292,7 +292,7 @@ export default function LeaderDashboard() {
             disabled={isExporting}
           >
             <Download className="mr-2 h-4 w-4" />
-            {isExporting ? "Exporting..." : "Export CSV"}
+            {isExporting ? "Exporting..." : "Export to Excel"}
           </Button>
         </div>
 

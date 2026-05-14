@@ -246,6 +246,15 @@ export const coursesApi = createApi({
       invalidatesTags: ['Courses', 'Progress'],
     }),
 
+    // Enroll in a full roadmap (single request → single email)
+    enrollInRoadmap: builder.mutation<{ enrolled_assignments: number[] }, string>({
+      query: (roadmapId) => ({
+        url: `/roadmaps/${roadmapId}/enroll/`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Courses', 'Progress'],
+    }),
+
     // Update course progress with file upload support
     updateCourseProgress: builder.mutation<TrainingTrack, FormData>({
       query: (formData) => {
@@ -291,6 +300,7 @@ export const {
   useGetUserProgressQuery,
   useGetScheduleQuery,
   useEnrollInCourseMutation,
+  useEnrollInRoadmapMutation,
   useUpdateCourseProgressMutation,
   useDeleteCourseSubmissionMutation,
 } = coursesApi

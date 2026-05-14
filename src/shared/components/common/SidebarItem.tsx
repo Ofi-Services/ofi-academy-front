@@ -16,7 +16,7 @@ export default function SidebarItem({ item }: SidebarItemProps) {
 
   const isActive =
     location.pathname === itemPathname &&
-    (itemTab ?? null) === (currentTab ?? null)
+    (itemTab === null || itemTab === currentTab)
 
   const handleClick = () => {
     if (item.path.startsWith("http://") || item.path.startsWith("https://")) {

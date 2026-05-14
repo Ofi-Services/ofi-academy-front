@@ -1,35 +1,36 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Loader2, CheckCircle2, BookOpen, Clock } from 'lucide-react';
+import { Loader2, CheckCircle2, BookOpen, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Roadmap, TrainingTrack } from '@/shared/store/coursesApi';
 
 interface RoadmapTimelineProps {
   roadmap: Roadmap;
   enrolledIds: Set<string>;
-  isEnrolling: boolean;
   isEnrollingRoadmap: boolean;
   onSelectTrack: (track: TrainingTrack) => void;
-  onEnroll: (trackId: string) => void;
   onEnrollRoadmap: (roadmap: Roadmap) => void;
 }
 
 export default function RoadmapTimeline({
   roadmap,
   enrolledIds,
-  isEnrolling,
   isEnrollingRoadmap,
   onSelectTrack,
-  onEnroll,
   onEnrollRoadmap,
 }: RoadmapTimelineProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
   const tracks = roadmap.training_tracks ?? [];
   const enrolledCount = tracks.filter((t) => enrolledIds.has(String(t.id))).length;
   const allEnrolled = tracks.length > 0 && enrolledCount === tracks.length;
 
   return (
     <Card className="overflow-hidden">
-      <div className="border-b bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-6">
+      <div
+        className="border-b bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-6 cursor-pointer select-none"
+        onClick={() => setIsExpanded((prev) => !prev)}
+      >
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -46,9 +47,15 @@ export default function RoadmapTimeline({
             )}
           </div>
 
-          <div className="flex-shrink-0 sm:pt-1">
+          <div className="flex items-center gap-2 flex-shrink-0 sm:pt-1">
             {allEnrolled ? (
-              <Button variant="outline" size="sm" disabled className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <CheckCircle2 className="w-4 h-4" />
                 Enrolled
               </Button>
@@ -56,7 +63,10 @@ export default function RoadmapTimeline({
               <Button
                 size="sm"
                 className="bg-primary hover:bg-primary/90"
-                onClick={() => onEnrollRoadmap(roadmap)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEnrollRoadmap(roadmap);
+                }}
                 disabled={isEnrollingRoadmap || tracks.length === 0}
               >
                 {isEnrollingRoadmap ? (
@@ -69,18 +79,30 @@ export default function RoadmapTimeline({
                 )}
               </Button>
             )}
+            <button
+              aria-label={isExpanded ? 'Collapse roadmap' : 'Expand roadmap'}
+              aria-expanded={isExpanded}
+              className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded((prev) => !prev);
+              }}
+            >
+              {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
           </div>
         </div>
       </div>
 
-      <CardContent className="p-0">
-        {tracks.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground italic">
-            This roadmap has no training tracks yet.
-          </div>
-        ) : (
-          <ol className="relative px-4 sm:px-8 py-6">
-            {tracks.map((track, index) => {
+      {isExpanded && (
+        <CardContent className="p-0">
+          {tracks.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground italic">
+              This roadmap has no training tracks yet.
+            </div>
+          ) : (
+            <ol className="relative px-4 sm:px-8 py-6">
+              {tracks.map((track, index) => {
               const isEnrolled = enrolledIds.has(String(track.id));
               const isLast = index === tracks.length - 1;
               const stepNumber = index + 1;
@@ -159,29 +181,14 @@ export default function RoadmapTimeline({
                           </div>
                         </div>
 
-                        <div className="flex-shrink-0 sm:w-32">
-                          {isEnrolled ? (
-                            <Button variant="outline" size="sm" className="w-full" disabled>
+                        {isEnrolled && (
+                          <div className="flex-shrink-0">
+                            <Badge variant="outline" className="gap-1 text-xs text-primary border-primary/40">
+                              <CheckCircle2 className="w-3 h-3" />
                               Enrolled
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="w-full bg-primary hover:bg-primary/90"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEnroll(track.id);
-                              }}
-                              disabled={isEnrolling}
-                            >
-                              {isEnrolling ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                'Enroll'
-                              )}
-                            </Button>
-                          )}
-                        </div>
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -191,6 +198,7 @@ export default function RoadmapTimeline({
           </ol>
         )}
       </CardContent>
+      )}
     </Card>
   );
 }

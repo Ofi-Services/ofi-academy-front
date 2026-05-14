@@ -10,7 +10,13 @@ export default function SidebarItem({ item }: SidebarItemProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const isActive = location.pathname === item.path
+  const [itemPathname, itemSearchRaw] = item.path.split("?")
+  const itemTab = new URLSearchParams(itemSearchRaw ?? "").get("tab")
+  const currentTab = new URLSearchParams(location.search).get("tab")
+
+  const isActive =
+    location.pathname === itemPathname &&
+    (itemTab ?? null) === (currentTab ?? null)
 
   const handleClick = () => {
     if (item.path.startsWith("http://") || item.path.startsWith("https://")) {

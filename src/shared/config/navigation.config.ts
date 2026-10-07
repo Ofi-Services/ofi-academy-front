@@ -1,4 +1,4 @@
-import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target, MessageSquare, Search, Route } from "lucide-react"
+import { BookOpen, Calendar, HelpCircle, Settings, Users2, Target, MessageSquare, Search, Route, GraduationCap } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -6,6 +6,8 @@ export interface NavItem {
   icon: LucideIcon
   path: string
   active?: boolean
+  /** Keep the item highlighted on nested routes and any ?tab= value */
+  matchPrefix?: boolean
 }
 
 export interface NavSection {
@@ -20,6 +22,7 @@ export const CONSULTANT_NAV: NavSection[] = [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
       { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
+      { label: "Certification Training", icon: GraduationCap, path: "/quizzes-certifications", matchPrefix: true },
       { label: "Training Schedule", icon: Calendar, path: "/schedule" },
       //{ label: "Course Resources", icon: BookOpen, path: "/resources" },
     ],
@@ -42,6 +45,7 @@ export const LEADER_NAV: NavSection[] = [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
       { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
+      { label: "Certification Training", icon: GraduationCap, path: "/quizzes-certifications", matchPrefix: true },
       { label: "Team Overview", icon: Users2, path: "/leader/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
       { label: "Calendar", icon: Target, path: "/leader/plans" },
@@ -66,6 +70,7 @@ export const HR_NAV: NavSection[] = [
       { label: "My Progress", icon: BookOpen, path: "/courses", active: true },
       { label: "Training Catalog", icon: Search, path: "/catalog" },
       { label: "Roadmaps", icon: Route, path: "/catalog?tab=roadmaps" },
+      { label: "Certification Training", icon: GraduationCap, path: "/quizzes-certifications", matchPrefix: true },
       { label: "Team Overview", icon: Users2, path: "/hr/dashboard" },
       //{ label: "Performance Reports", icon: BarChart3, path: "/leader/reports" },
       { label: "Calendar", icon: Target, path: "/hr/plans" },

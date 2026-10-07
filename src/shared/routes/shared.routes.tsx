@@ -5,6 +5,8 @@ import AuthenticatedLayout from "../components/common/AuthenticatedLayout"
 import TrainingTracksDashboard from "../components/common/CoursesDashboard"
 import WorkInProgress from "../components/common/WorkInProgressPage"
 import CatalogPage from "@/modules/consultant/pages/CatalogPage"
+import QuizzesCertificationsPage from "@/modules/quizzes-certifications/pages/QuizzesCertificationsPage"
+import ExamAttemptPage from "@/modules/quizzes-certifications/pages/ExamAttemptPage"
 
 // Shared pages (accessible by all authenticated users)
 const Support = () => <WorkInProgress />
@@ -32,6 +34,26 @@ export const sharedRoutes = (
         <ProtectedRoute>
           <AuthenticatedLayout>
             <CatalogPage />
+          </AuthenticatedLayout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/quizzes-certifications"
+      element={
+        <ProtectedRoute>
+          <AuthenticatedLayout>
+            <QuizzesCertificationsPage />
+          </AuthenticatedLayout>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/quizzes-certifications/attempts/:attemptId"
+      element={
+        <ProtectedRoute>
+          <AuthenticatedLayout>
+            <ExamAttemptPage />
           </AuthenticatedLayout>
         </ProtectedRoute>
       }

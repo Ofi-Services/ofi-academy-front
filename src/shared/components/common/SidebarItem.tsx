@@ -14,9 +14,10 @@ export default function SidebarItem({ item }: SidebarItemProps) {
   const itemTab = new URLSearchParams(itemSearchRaw ?? "").get("tab")
   const currentTab = new URLSearchParams(location.search).get("tab")
 
-  const isActive =
-    location.pathname === itemPathname &&
-    (itemTab ?? null) === (currentTab ?? null)
+  const isActive = item.matchPrefix
+    ? location.pathname === itemPathname || location.pathname.startsWith(`${itemPathname}/`)
+    : location.pathname === itemPathname &&
+      (itemTab ?? null) === (currentTab ?? null)
 
   const handleClick = () => {
     if (item.path.startsWith("http://") || item.path.startsWith("https://")) {
@@ -24,7 +25,7 @@ export default function SidebarItem({ item }: SidebarItemProps) {
       return
     }
 
-    if (!isActive) navigate(item.path)
+    if (!isActive || location.pathname !== itemPathname) navigate(item.path)
   }
 
   return (

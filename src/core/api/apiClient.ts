@@ -15,7 +15,7 @@ interface ApiErrorResponse {
  * Configuración del entorno para la API
  */
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+  BASE_URL: "https://ofiacademy.api.sofiatechnology.ai/api" ,//import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   TIMEOUT: 30000, // 30 segundos
   VERSION: "v1",
 };
@@ -97,7 +97,7 @@ export const apiClient = createApiClient();
  * Proporciona una capa de abstracción sobre axios para operaciones comunes
  */
 export class ApiService {
-  constructor(private readonly instance: AxiosInstance = apiClient) { }
+  constructor(private readonly instance: AxiosInstance = apiClient) {}
 
   /**
    * Realiza una petición GET
